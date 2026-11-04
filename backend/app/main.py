@@ -1,0 +1,46 @@
+from fastapi import FastAPI, HTTPException
+from sqlalchemy import text
+
+from app.core.config import settings
+from app.database import engine
+
+
+app = FastAPI(
+    title=settings.APP_NAME,
+    description="API do Sistema de Gestão Escolar do Colégio Batista Bob Pierce.",
+    version="1.0.0"
+)
+
+
+@app.get("/")
+def home():
+    return {
+        "mensagem": "Sistema de Gestão Escolar C.B.B.P.",
+        "status": "online"
+    }
+
+
+@app.get("/health")
+def health():
+    return {
+        "status": "ok",
+        "aplicacao": "Gestão Escolar C.B.B.P."
+    }
+
+
+@app.get("/health/database")
+def database_health():
+    try:
+        with engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
+
+        return {
+            "status": "conectado",
+            "database": "PostgreSQL"
+        }
+
+    except Exception:
+        raise HTTPException(
+            status_code=503,
+            detail="Não foi possível conectar ao banco de dados."
+        )
