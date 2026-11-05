@@ -9,6 +9,7 @@ from app.api.routes import (
     responsaveis,
     vinculos,
     matriculas,
+    professores,
 )
 
 
@@ -24,7 +25,7 @@ app.include_router(turmas.router)
 app.include_router(responsaveis.router)
 app.include_router(vinculos.router)
 app.include_router(matriculas.router)
-
+app.include_router(professores.router)
 
 @app.get("/")
 def home():

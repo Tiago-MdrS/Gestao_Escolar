@@ -3,6 +3,7 @@ from app.models.responsavel import Responsavel
 from app.models.turma import Turma
 from app.models.aluno_responsavel import AlunoResponsavel
 from app.models.matricula import Matricula
+from app.models.professor import Professor
 
 __all__ = [
     "Aluno",
@@ -10,4 +11,5 @@ __all__ = [
     "Turma",
     "AlunoResponsavel",
     "Matricula",
+    "Professor",
 ]
