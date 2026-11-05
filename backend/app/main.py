@@ -3,13 +3,20 @@ from sqlalchemy import text
 
 from app.core.config import settings
 from app.database import engine
+from app.api.routes import alunos, turmas, responsaveis, vinculos
 
 
 app = FastAPI(
+
     title=settings.APP_NAME,
     description="API do Sistema de Gestão Escolar do Colégio Batista Bob Pierce.",
     version="1.0.0"
 )
+
+app.include_router(alunos.router)
+app.include_router(turmas.router)
+app.include_router(responsaveis.router)
+app.include_router(vinculos.router)
 
 
 @app.get("/")

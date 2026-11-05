@@ -1,7 +1,7 @@
 
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, ForeignKey, Integer, String
+from sqlalchemy import Boolean, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -13,6 +13,14 @@ if TYPE_CHECKING:
 
 class AlunoResponsavel(Base):
     __tablename__ = "alunos_responsaveis"
+
+    __table_args__ = (
+        UniqueConstraint(
+            "aluno_id",
+            "responsavel_id",
+            name="uq_aluno_responsavel"
+        ),
+    )
 
     id: Mapped[int] = mapped_column(
         Integer,

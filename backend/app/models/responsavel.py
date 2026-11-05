@@ -1,7 +1,7 @@
 
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Integer, String
+from sqlalchemy import Boolean, Integer, String, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -40,7 +40,13 @@ class Responsavel(Base):
         nullable=True
     )
 
+    ativo: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=True,
+        server_default=text("true")
+    )
+
     vinculos: Mapped[list["AlunoResponsavel"]] = relationship(
-        back_populates="responsavel",
-        cascade="all, delete-orphan"
+        back_populates="responsavel"
     )
