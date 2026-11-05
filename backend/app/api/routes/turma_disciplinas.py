@@ -1,4 +1,5 @@
-﻿from fastapi import APIRouter, Depends, HTTPException, Query, status
+from app.core.dependencies import require_permission
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -76,6 +77,8 @@ def validar_referencias(
     "/",
     response_model=TurmaDisciplinaResponse,
     status_code=status.HTTP_201_CREATED
+,
+    dependencies=[Depends(require_permission('turma_disciplinas.gerenciar'))]
 )
 def criar_vinculo(
     dados: TurmaDisciplinaCreate,
@@ -125,6 +128,8 @@ def criar_vinculo(
 @router.get(
     "/",
     response_model=list[TurmaDisciplinaResponse]
+,
+    dependencies=[Depends(require_permission('turma_disciplinas.listar'))]
 )
 def listar_vinculos(
     turma_id: int | None = Query(default=None, gt=0),
@@ -172,6 +177,8 @@ def listar_vinculos(
 @router.get(
     "/{vinculo_id}",
     response_model=TurmaDisciplinaResponse
+,
+    dependencies=[Depends(require_permission('turma_disciplinas.listar'))]
 )
 def buscar_vinculo(
     vinculo_id: int,
@@ -193,6 +200,8 @@ def buscar_vinculo(
 @router.put(
     "/{vinculo_id}",
     response_model=TurmaDisciplinaResponse
+,
+    dependencies=[Depends(require_permission('turma_disciplinas.gerenciar'))]
 )
 def atualizar_vinculo(
     vinculo_id: int,
@@ -267,6 +276,8 @@ def atualizar_vinculo(
 @router.delete(
     "/{vinculo_id}",
     response_model=TurmaDisciplinaResponse
+,
+    dependencies=[Depends(require_permission('turma_disciplinas.gerenciar'))]
 )
 def inativar_vinculo(
     vinculo_id: int,

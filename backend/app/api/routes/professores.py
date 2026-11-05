@@ -1,3 +1,4 @@
+from app.core.dependencies import require_permission
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
@@ -23,6 +24,8 @@ router = APIRouter(
     "/",
     response_model=ProfessorResponse,
     status_code=status.HTTP_201_CREATED
+,
+    dependencies=[Depends(require_permission('professores.criar'))]
 )
 def criar_professor(
     dados: ProfessorCreate,
@@ -65,6 +68,8 @@ def criar_professor(
 @router.get(
     "/",
     response_model=list[ProfessorResponse]
+,
+    dependencies=[Depends(require_permission('professores.listar'))]
 )
 def listar_professores(
     offset: int = Query(default=0, ge=0),
@@ -91,6 +96,8 @@ def listar_professores(
 @router.get(
     "/{professor_id}",
     response_model=ProfessorResponse
+,
+    dependencies=[Depends(require_permission('professores.listar'))]
 )
 def buscar_professor(
     professor_id: int,
@@ -112,6 +119,8 @@ def buscar_professor(
 @router.put(
     "/{professor_id}",
     response_model=ProfessorResponse
+,
+    dependencies=[Depends(require_permission('professores.editar'))]
 )
 def atualizar_professor(
     professor_id: int,
@@ -178,6 +187,8 @@ def atualizar_professor(
 @router.delete(
     "/{professor_id}",
     response_model=ProfessorResponse
+,
+    dependencies=[Depends(require_permission('professores.desativar'))]
 )
 def inativar_professor(
     professor_id: int,

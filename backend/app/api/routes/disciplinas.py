@@ -1,4 +1,5 @@
-﻿from fastapi import APIRouter, Depends, HTTPException, Query, status
+from app.core.dependencies import require_permission
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -22,6 +23,8 @@ router = APIRouter(
     "/",
     response_model=DisciplinaResponse,
     status_code=status.HTTP_201_CREATED
+,
+    dependencies=[Depends(require_permission('disciplinas.criar'))]
 )
 def criar_disciplina(
     dados: DisciplinaCreate,
@@ -51,6 +54,8 @@ def criar_disciplina(
 @router.get(
     "/",
     response_model=list[DisciplinaResponse]
+,
+    dependencies=[Depends(require_permission('disciplinas.listar'))]
 )
 def listar_disciplinas(
     offset: int = Query(default=0, ge=0),
@@ -78,6 +83,8 @@ def listar_disciplinas(
 @router.get(
     "/{disciplina_id}",
     response_model=DisciplinaResponse
+,
+    dependencies=[Depends(require_permission('disciplinas.listar'))]
 )
 def buscar_disciplina(
     disciplina_id: int,
@@ -99,6 +106,8 @@ def buscar_disciplina(
 @router.put(
     "/{disciplina_id}",
     response_model=DisciplinaResponse
+,
+    dependencies=[Depends(require_permission('disciplinas.editar'))]
 )
 def atualizar_disciplina(
     disciplina_id: int,
@@ -159,6 +168,8 @@ def atualizar_disciplina(
 @router.delete(
     "/{disciplina_id}",
     response_model=DisciplinaResponse
+,
+    dependencies=[Depends(require_permission('disciplinas.desativar'))]
 )
 def inativar_disciplina(
     disciplina_id: int,

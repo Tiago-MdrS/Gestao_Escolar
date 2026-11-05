@@ -1,5 +1,6 @@
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from app.core.dependencies import require_permission
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -23,6 +24,8 @@ router = APIRouter(
     "/",
     response_model=ResponsavelResponse,
     status_code=status.HTTP_201_CREATED
+,
+    dependencies=[Depends(require_permission("responsaveis.criar"))]
 )
 def criar_responsavel(
     dados: ResponsavelCreate,
@@ -65,6 +68,8 @@ def criar_responsavel(
 @router.get(
     "/",
     response_model=list[ResponsavelResponse]
+,
+    dependencies=[Depends(require_permission("responsaveis.listar"))]
 )
 def listar_responsaveis(
     offset: int = Query(default=0, ge=0),
@@ -91,6 +96,8 @@ def listar_responsaveis(
 @router.get(
     "/{responsavel_id}",
     response_model=ResponsavelResponse
+,
+    dependencies=[Depends(require_permission("responsaveis.listar"))]
 )
 def buscar_responsavel(
     responsavel_id: int,
@@ -112,6 +119,8 @@ def buscar_responsavel(
 @router.put(
     "/{responsavel_id}",
     response_model=ResponsavelResponse
+,
+    dependencies=[Depends(require_permission("responsaveis.editar"))]
 )
 def atualizar_responsavel(
     responsavel_id: int,
@@ -174,6 +183,8 @@ def atualizar_responsavel(
 @router.delete(
     "/{responsavel_id}",
     response_model=ResponsavelResponse
+,
+    dependencies=[Depends(require_permission("responsaveis.desativar"))]
 )
 def inativar_responsavel(
     responsavel_id: int,

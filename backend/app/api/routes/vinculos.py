@@ -1,5 +1,6 @@
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from app.core.dependencies import require_permission
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -67,6 +68,8 @@ def obter_responsavel_ativo(
     "/",
     response_model=VinculoResponse,
     status_code=status.HTTP_201_CREATED
+,
+    dependencies=[Depends(require_permission("alunos.editar"))]
 )
 def criar_vinculo(
     aluno_id: int,
@@ -122,6 +125,8 @@ def criar_vinculo(
 @router.get(
     "/",
     response_model=list[VinculoResponse]
+,
+    dependencies=[Depends(require_permission("alunos.listar"))]
 )
 def listar_vinculos(
     aluno_id: int,
@@ -139,6 +144,8 @@ def listar_vinculos(
 @router.put(
     "/{vinculo_id}",
     response_model=VinculoResponse
+,
+    dependencies=[Depends(require_permission("alunos.editar"))]
 )
 def atualizar_vinculo(
     aluno_id: int,
@@ -200,7 +207,9 @@ def atualizar_vinculo(
         )
 
 
-@router.delete("/{vinculo_id}")
+@router.delete("/{vinculo_id}",
+    dependencies=[Depends(require_permission("alunos.editar"))]
+)
 def excluir_vinculo(
     aluno_id: int,
     vinculo_id: int,

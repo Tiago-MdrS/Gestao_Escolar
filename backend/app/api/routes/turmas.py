@@ -1,5 +1,6 @@
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from app.core.dependencies import require_permission
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -20,6 +21,8 @@ router = APIRouter(
     "/",
     response_model=TurmaResponse,
     status_code=status.HTTP_201_CREATED
+,
+    dependencies=[Depends(require_permission("turmas.criar"))]
 )
 def cadastrar_turma(
     dados: TurmaCreate,
@@ -48,6 +51,8 @@ def cadastrar_turma(
 @router.get(
     "/",
     response_model=list[TurmaResponse]
+,
+    dependencies=[Depends(require_permission("turmas.listar"))]
 )
 def listar_turmas(
     db: Session = Depends(get_db),
@@ -69,6 +74,8 @@ def listar_turmas(
 @router.get(
     "/{turma_id}",
     response_model=TurmaResponse
+,
+    dependencies=[Depends(require_permission("turmas.listar"))]
 )
 def buscar_turma(
     turma_id: int,
@@ -90,6 +97,8 @@ def buscar_turma(
 @router.put(
     "/{turma_id}",
     response_model=TurmaResponse
+,
+    dependencies=[Depends(require_permission("turmas.editar"))]
 )
 def atualizar_turma(
     turma_id: int,
@@ -205,6 +214,8 @@ def atualizar_turma(
 @router.delete(
     "/{turma_id}",
     status_code=status.HTTP_200_OK
+,
+    dependencies=[Depends(require_permission("turmas.desativar"))]
 )
 def inativar_turma(
     turma_id: int,

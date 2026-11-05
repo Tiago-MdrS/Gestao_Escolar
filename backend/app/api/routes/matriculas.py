@@ -1,4 +1,5 @@
-﻿from fastapi import APIRouter, Depends, HTTPException, Query, status
+from app.core.dependencies import require_permission
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -12,6 +13,8 @@ from app.schemas.matricula import (
     MatriculaResponse,
     MatriculaUpdate,
 )
+from app.core.dependencies import get_current_user
+from app.models.usuario import Usuario
 
 
 router = APIRouter(
@@ -115,6 +118,8 @@ def validar_capacidade(
     "/matriculas/",
     response_model=MatriculaResponse,
     status_code=status.HTTP_201_CREATED
+,
+    dependencies=[Depends(require_permission('matriculas.criar'))]
 )
 def cadastrar_matricula(
     dados: MatriculaCreate,
@@ -164,6 +169,8 @@ def cadastrar_matricula(
 @router.get(
     "/matriculas/",
     response_model=list[MatriculaResponse]
+,
+    dependencies=[Depends(require_permission('matriculas.listar'))]
 )
 def listar_matriculas(
     db: Session = Depends(get_db),
@@ -218,6 +225,8 @@ def listar_matriculas(
 @router.get(
     "/matriculas/{matricula_id}",
     response_model=MatriculaResponse
+,
+    dependencies=[Depends(require_permission('matriculas.listar'))]
 )
 def buscar_matricula(
     matricula_id: int,
@@ -239,6 +248,8 @@ def buscar_matricula(
 @router.get(
     "/alunos/{aluno_id}/matriculas/",
     response_model=list[MatriculaResponse]
+,
+    dependencies=[Depends(require_permission('matriculas.listar'))]
 )
 def listar_historico_aluno(
     aluno_id: int,
@@ -274,11 +285,13 @@ def listar_historico_aluno(
 @router.put(
     "/matriculas/{matricula_id}",
     response_model=MatriculaResponse
+,
+    dependencies=[Depends(require_permission('matriculas.editar'))]
 )
 def atualizar_matricula(
     matricula_id: int,
     dados: MatriculaUpdate,
-    db: Session = Depends(get_db)
+    usuario: Usuario = Depends(get_current_user), db: Session = Depends(get_db)
 ):
     """Atualiza a situação ou as observações de uma matrícula."""
 
@@ -295,6 +308,16 @@ def atualizar_matricula(
         )
 
     dados_atualizados = dados.model_dump(exclude_unset=True)
+    if dados_atualizados.get("situacao") == "cancelada":
+        permissoes_usuario = {
+            permissao.codigo
+            for permissao in usuario.perfil.permissoes
+        }
+        if "matriculas.cancelar" not in permissoes_usuario:
+            raise HTTPException(
+                status_code=403,
+                detail="Você não possui permissão para cancelar matrículas."
+            )
 
     if not dados_atualizados:
         raise HTTPException(

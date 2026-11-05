@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from app.core.dependencies import require_permission
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -42,6 +43,8 @@ def validar_turma(db: Session, turma_id: int | None) -> None:
     "/",
     response_model=AlunoResponse,
     status_code=status.HTTP_201_CREATED
+,
+    dependencies=[Depends(require_permission("alunos.criar"))]
 )
 def cadastrar_aluno(
     dados: AlunoCreate,
@@ -96,6 +99,8 @@ def cadastrar_aluno(
 @router.get(
     "/",
     response_model=list[AlunoResponse]
+,
+    dependencies=[Depends(require_permission("alunos.listar"))]
 )
 def listar_alunos(
     db: Session = Depends(get_db),
@@ -117,6 +122,8 @@ def listar_alunos(
 @router.get(
     "/{aluno_id}",
     response_model=AlunoResponse
+,
+    dependencies=[Depends(require_permission("alunos.listar"))]
 )
 def buscar_aluno(
     aluno_id: int,
@@ -138,6 +145,8 @@ def buscar_aluno(
 @router.put(
     "/{aluno_id}",
     response_model=AlunoResponse
+,
+    dependencies=[Depends(require_permission("alunos.editar"))]
 )
 def atualizar_aluno(
     aluno_id: int,
@@ -208,6 +217,8 @@ def atualizar_aluno(
 @router.delete(
     "/{aluno_id}",
     status_code=status.HTTP_200_OK
+,
+    dependencies=[Depends(require_permission("alunos.desativar"))]
 )
 def inativar_aluno(
     aluno_id: int,
