@@ -1,9 +1,15 @@
-from fastapi import FastAPI, HTTPException
+﻿from fastapi import FastAPI, HTTPException
 from sqlalchemy import text
 
 from app.core.config import settings
 from app.database import engine
-from app.api.routes import alunos, turmas, responsaveis, vinculos
+from app.api.routes import (
+    alunos,
+    turmas,
+    responsaveis,
+    vinculos,
+    matriculas,
+)
 
 
 app = FastAPI(
@@ -17,6 +23,7 @@ app.include_router(alunos.router)
 app.include_router(turmas.router)
 app.include_router(responsaveis.router)
 app.include_router(vinculos.router)
+app.include_router(matriculas.router)
 
 
 @app.get("/")

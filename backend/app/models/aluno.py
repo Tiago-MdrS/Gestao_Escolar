@@ -10,6 +10,7 @@ from app.database import Base
 if TYPE_CHECKING:
     from app.models.turma import Turma
     from app.models.aluno_responsavel import AlunoResponsavel
+    from app.models.matricula import Matricula
 
 
 class Aluno(Base):
@@ -113,4 +114,8 @@ class Aluno(Base):
     responsaveis: Mapped[list["AlunoResponsavel"]] = relationship(
         back_populates="aluno",
         cascade="all, delete-orphan"
+    )
+
+    matriculas: Mapped[list["Matricula"]] = relationship(
+        back_populates="aluno"
     )

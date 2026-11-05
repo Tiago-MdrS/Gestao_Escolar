@@ -1,5 +1,4 @@
-
-from typing import TYPE_CHECKING
+﻿from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -8,6 +7,7 @@ from app.database import Base
 
 if TYPE_CHECKING:
     from app.models.aluno import Aluno
+    from app.models.matricula import Matricula
 
 
 class Turma(Base):
@@ -57,5 +57,9 @@ class Turma(Base):
     )
 
     alunos: Mapped[list["Aluno"]] = relationship(
+        back_populates="turma"
+    )
+
+    matriculas: Mapped[list["Matricula"]] = relationship(
         back_populates="turma"
     )

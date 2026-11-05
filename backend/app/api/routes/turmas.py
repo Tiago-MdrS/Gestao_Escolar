@@ -1,10 +1,11 @@
+
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models.aluno import Aluno
+from app.models.matricula import Matricula
 from app.models.turma import Turma
 from app.schemas.turma import TurmaCreate, TurmaResponse, TurmaUpdate
 
@@ -30,7 +31,7 @@ def cadastrar_turma(
 
     db.add(nova_turma)
 
-    try: 
+    try:
         db.commit()
         db.refresh(nova_turma)
     except IntegrityError:
@@ -40,6 +41,7 @@ def cadastrar_turma(
             status_code=status.HTTP_409_CONFLICT,
             detail="Não foi possível cadastrar a turma."
         )
+
     return nova_turma
 
 
@@ -47,13 +49,11 @@ def cadastrar_turma(
     "/",
     response_model=list[TurmaResponse]
 )
-
 def listar_turmas(
     db: Session = Depends(get_db),
     offset: int = Query(default=0, ge=0),
     limit: int = Query(default=100, ge=1, le=100)
 ):
-
     """Lista as turmas cadastradas."""
 
     turmas = db.scalars(
@@ -64,6 +64,7 @@ def listar_turmas(
     ).all()
 
     return turmas
+
 
 @router.get(
     "/{turma_id}",
@@ -82,7 +83,9 @@ def buscar_turma(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Turma não encontrada."
         )
+
     return turma
+
 
 @router.put(
     "/{turma_id}",
@@ -93,23 +96,29 @@ def atualizar_turma(
     dados: TurmaUpdate,
     db: Session = Depends(get_db)
 ):
-
     """Atualiza os dados de uma turma."""
 
-    turma = db.get(Turma, turma_id)
+    # Bloqueia a turma durante a atualização.
+    turma = db.scalar(
+        select(Turma)
+        .where(Turma.id == turma_id)
+        .with_for_update()
+    )
 
     if turma is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Turma não encontrada."
         )
+
     dados_atualizados = dados.model_dump(exclude_unset=True)
 
     if not dados_atualizados:
         raise HTTPException(
-            status_code=status.HTTP_404_BAD_REQUEST,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Nenhum dado foi informado para atualização."
         )
+
     campos_obrigatorios = {
         "nome",
         "etapa",
@@ -127,32 +136,61 @@ def atualizar_turma(
                 detail=f"O campo '{campo}' não pode ser nulo."
             )
 
-        # Impede reduzir a capacidade abaixo qua quantidade de alunos ativos.
+    # Impede alterar o ano letivo quando existem matrículas vinculadas.
+    novo_ano_letivo = dados_atualizados.get("ano_letivo")
 
+    if (
+        novo_ano_letivo is not None
+        and novo_ano_letivo != turma.ano_letivo
+    ):
+        possui_matriculas = db.scalar(
+            select(
+                select(Matricula.id)
+                .where(Matricula.turma_id == turma_id)
+                .exists()
+            )
+        )
+
+        if possui_matriculas:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=(
+                    "Não é possível alterar o ano letivo de uma turma "
+                    "que possui matrículas registradas. "
+                    "Cadastre uma nova turma para o outro ano letivo."
+                )
+            )
+
+    # Verifica a capacidade usando somente matrículas ativas.
     nova_capacidade = dados_atualizados.get("capacidade")
 
     if nova_capacidade is not None:
-        quantidade_alunos = db.scalar(
-            select(func.count(Aluno.id)).where(
-                Aluno.turma_id == turma_id,
-                Aluno.status == "ativo"
+        quantidade_matriculas = db.scalar(
+            select(func.count(Matricula.id)).where(
+                Matricula.turma_id == turma_id,
+                Matricula.ano_letivo == turma.ano_letivo,
+                Matricula.situacao == "ativa"
             )
         ) or 0
 
-    if nova_capacidade < quantidade_alunos:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=(
-                f"Não é possível reduzir a capacidade para "
-                f"{nova_capacidade}. Existem {quantidade_alunos} "
-                f"aluno(s) ativo(s) nesta turma."
+        if nova_capacidade < quantidade_matriculas:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=(
+                    f"Não é possível reduzir a capacidade para "
+                    f"{nova_capacidade}. Existem "
+                    f"{quantidade_matriculas} matrícula(s) ativa(s) "
+                    f"nesta turma."
+                )
             )
-        )
+
     for campo, valor in dados_atualizados.items():
         setattr(turma, campo, valor)
+
     try:
         db.commit()
         db.refresh(turma)
+
     except IntegrityError:
         db.rollback()
 
@@ -160,7 +198,9 @@ def atualizar_turma(
             status_code=status.HTTP_409_CONFLICT,
             detail="Não foi possível atualizar a turma."
         )
+
     return turma
+
 
 @router.delete(
     "/{turma_id}",
@@ -185,11 +225,12 @@ def inativar_turma(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Essa turma já está inativa."
         )
+
     turma.ativa = False
 
     db.commit()
 
-    return{
+    return {
         "mensagem": "Turma inativada com sucesso.",
         "turma_id": turma.id,
         "ativa": turma.ativa
