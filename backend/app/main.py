@@ -10,11 +10,12 @@ from app.api.routes import (
     vinculos,
     matriculas,
     professores,
+    disciplinas,
+    turma_disciplinas,
 )
 
 
 app = FastAPI(
-
     title=settings.APP_NAME,
     description="API do Sistema de Gestão Escolar do Colégio Batista Bob Pierce.",
     version="1.0.0"
@@ -26,6 +27,9 @@ app.include_router(responsaveis.router)
 app.include_router(vinculos.router)
 app.include_router(matriculas.router)
 app.include_router(professores.router)
+app.include_router(disciplinas.router)
+app.include_router(turma_disciplinas.router)
+
 
 @app.get("/")
 def home():

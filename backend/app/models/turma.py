@@ -8,6 +8,7 @@ from app.database import Base
 if TYPE_CHECKING:
     from app.models.aluno import Aluno
     from app.models.matricula import Matricula
+    from app.models.turma_disciplina import TurmaDisciplina
 
 
 class Turma(Base):
@@ -61,5 +62,9 @@ class Turma(Base):
     )
 
     matriculas: Mapped[list["Matricula"]] = relationship(
+        back_populates="turma"
+    )
+
+    disciplinas: Mapped[list["TurmaDisciplina"]] = relationship(
         back_populates="turma"
     )
