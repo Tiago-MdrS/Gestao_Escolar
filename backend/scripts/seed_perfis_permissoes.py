@@ -67,6 +67,28 @@ PERMISSOES = [
     ("frequencia.registrar", "Registrar frequência", "Registrar presença, falta e falta justificada.", "frequencias"),
     ("frequencia.editar", "Editar frequência", "Corrigir registros de frequência.", "frequencias"),
     ("frequencia.consultar_propria", "Consultar frequências próprias", "Consultar frequências das próprias turmas.", "frequencias"),
+
+    # Per?odos letivos
+    ("periodos.listar", "Listar per?odos letivos", "Consultar per?odos letivos cadastrados.", "academico"),
+    ("periodos.gerenciar", "Gerenciar per?odos letivos", "Criar, editar e desativar per?odos letivos.", "academico"),
+
+    # Avalia??es
+    ("avaliacoes.listar", "Listar avalia??es", "Consultar avalia??es cadastradas.", "academico"),
+    ("avaliacoes.gerenciar", "Gerenciar avalia??es", "Criar, editar e desativar avalia??es.", "academico"),
+
+    # Notas
+    ("notas.listar", "Listar notas", "Consultar notas dos alunos.", "academico"),
+    ("notas.lancar", "Lan?ar notas", "Registrar notas das avalia??es.", "academico"),
+    ("notas.editar", "Editar notas", "Corrigir notas lan?adas.", "academico"),
+    ("notas.consultar_proprias", "Consultar notas pr?prias", "Consultar notas das pr?prias turmas.", "academico"),
+
+    # Recupera??es
+    ("recuperacoes.listar", "Listar recupera??es", "Consultar notas de recupera??o.", "academico"),
+    ("recuperacoes.gerenciar", "Gerenciar recupera??es", "Registrar e editar notas de recupera??o.", "academico"),
+
+    # Relat?rios acad?micos
+    ("relatorios.desempenho", "Consultar desempenho acad?mico", "Consultar m?dias e desempenho dos alunos.", "relatorios"),
+
 ]
 
 
@@ -114,6 +136,17 @@ PERFIS = {
             "frequencia.registrar",
             "frequencia.editar",
             "frequencia.consultar_propria",
+            "periodos.listar",
+            "periodos.gerenciar",
+            "avaliacoes.listar",
+            "avaliacoes.gerenciar",
+            "notas.listar",
+            "notas.lancar",
+            "notas.editar",
+            "notas.consultar_proprias",
+            "recuperacoes.listar",
+            "recuperacoes.gerenciar",
+            "relatorios.desempenho",
         ],
     },
     "Gestor": {
@@ -151,6 +184,17 @@ PERFIS = {
             "frequencia.registrar",
             "frequencia.editar",
             "frequencia.consultar_propria",
+            "periodos.listar",
+            "periodos.gerenciar",
+            "avaliacoes.listar",
+            "avaliacoes.gerenciar",
+            "notas.listar",
+            "notas.lancar",
+            "notas.editar",
+            "notas.consultar_proprias",
+            "recuperacoes.listar",
+            "recuperacoes.gerenciar",
+            "relatorios.desempenho",
         ],
     },
     "Secretaria": {
@@ -174,6 +218,11 @@ PERFIS = {
             "frequencia.listar",
             "frequencia.registrar",
             "frequencia.editar",
+            "periodos.listar",
+            "avaliacoes.listar",
+            "notas.listar",
+            "recuperacoes.listar",
+            "relatorios.desempenho",
         ],
     },
     "Professor": {
@@ -185,6 +234,15 @@ PERFIS = {
             "horarios.consultar_proprios",
             "frequencia.registrar",
             "frequencia.consultar_propria",
+            "periodos.listar",
+            "avaliacoes.listar",
+            "avaliacoes.gerenciar",
+            "notas.lancar",
+            "notas.editar",
+            "notas.consultar_proprias",
+            "recuperacoes.listar",
+            "recuperacoes.gerenciar",
+            "relatorios.desempenho",
         ],
     },
 }

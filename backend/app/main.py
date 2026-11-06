@@ -18,6 +18,8 @@ from app.api.routes import (
     turma_disciplinas,
     horarios,
     frequencias,
+    periodos,
+    avaliacoes,
 )
 
 
@@ -40,6 +42,8 @@ app.include_router(disciplinas.router)
 app.include_router(turma_disciplinas.router)
 app.include_router(horarios.router)
 app.include_router(frequencias.router)
+app.include_router(periodos.router)
+app.include_router(avaliacoes.router)
 app.include_router(perfis.router)
 
 
