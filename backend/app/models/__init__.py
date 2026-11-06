@@ -1,4 +1,4 @@
-﻿from app.models.aluno import Aluno
+from app.models.aluno import Aluno
 from app.models.responsavel import Responsavel
 from app.models.turma import Turma
 from app.models.aluno_responsavel import AlunoResponsavel
@@ -22,4 +22,11 @@ __all__ = [
     "Perfil",
     "Permissao",
     "Usuario",
+    "Horario",
+    "Frequencia",
 ]
+
+from app.models.horario import Horario
+
+
+from app.models.frequencia import Frequencia

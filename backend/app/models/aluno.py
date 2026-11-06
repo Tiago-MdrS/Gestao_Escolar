@@ -1,4 +1,4 @@
-
+﻿
 from datetime import date, datetime
 from typing import TYPE_CHECKING
 
@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from app.models.turma import Turma
     from app.models.aluno_responsavel import AlunoResponsavel
     from app.models.matricula import Matricula
+    from app.models.frequencia import Frequencia
 
 
 class Aluno(Base):
@@ -117,5 +118,9 @@ class Aluno(Base):
     )
 
     matriculas: Mapped[list["Matricula"]] = relationship(
+        back_populates="aluno"
+    )
+
+    frequencias: Mapped[list["Frequencia"]] = relationship(
         back_populates="aluno"
     )

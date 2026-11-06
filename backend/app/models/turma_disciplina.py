@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     from app.models.disciplina import Disciplina
     from app.models.professor import Professor
     from app.models.turma import Turma
+    from app.models.horario import Horario
 
 
 class TurmaDisciplina(Base):
@@ -82,4 +83,8 @@ class TurmaDisciplina(Base):
 
     professor: Mapped["Professor"] = relationship(
         back_populates="atribuicoes"
+    )
+
+    horarios: Mapped[list["Horario"]] = relationship(
+        back_populates="turma_disciplina"
     )

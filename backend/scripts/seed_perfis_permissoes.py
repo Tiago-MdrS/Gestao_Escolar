@@ -1,4 +1,4 @@
-﻿from sqlalchemy import select
+from sqlalchemy import select
 
 from app.database import SessionLocal
 from app.models.perfil import Perfil
@@ -62,6 +62,11 @@ PERMISSOES = [
     ("horarios.listar", "Consultar grade horária", "Consultar horários das turmas.", "horarios"),
     ("horarios.gerenciar", "Gerenciar grade horária", "Criar, editar e desativar horários.", "horarios"),
     ("horarios.consultar_proprios", "Consultar horários próprios", "Consultar a própria grade horária.", "horarios"),
+    # Frequência escolar
+    ("frequencia.listar", "Listar frequências", "Consultar registros de frequência dos alunos.", "frequencias"),
+    ("frequencia.registrar", "Registrar frequência", "Registrar presença, falta e falta justificada.", "frequencias"),
+    ("frequencia.editar", "Editar frequência", "Corrigir registros de frequência.", "frequencias"),
+    ("frequencia.consultar_propria", "Consultar frequências próprias", "Consultar frequências das próprias turmas.", "frequencias"),
 ]
 
 
@@ -105,6 +110,10 @@ PERFIS = {
             "turma_disciplinas.gerenciar",
             "horarios.listar",
             "horarios.gerenciar",
+            "frequencia.listar",
+            "frequencia.registrar",
+            "frequencia.editar",
+            "frequencia.consultar_propria",
         ],
     },
     "Gestor": {
@@ -138,6 +147,10 @@ PERFIS = {
             "turma_disciplinas.gerenciar",
             "horarios.listar",
             "horarios.gerenciar",
+            "frequencia.listar",
+            "frequencia.registrar",
+            "frequencia.editar",
+            "frequencia.consultar_propria",
         ],
     },
     "Secretaria": {
@@ -158,6 +171,9 @@ PERFIS = {
             "disciplinas.listar",
             "turma_disciplinas.listar",
             "horarios.listar",
+            "frequencia.listar",
+            "frequencia.registrar",
+            "frequencia.editar",
         ],
     },
     "Professor": {
@@ -167,6 +183,8 @@ PERFIS = {
             "disciplinas.listar",
             "turma_disciplinas.listar",
             "horarios.consultar_proprios",
+            "frequencia.registrar",
+            "frequencia.consultar_propria",
         ],
     },
 }
@@ -247,6 +265,3 @@ def executar_cadastro():
 
 if __name__ == "__main__":
     executar_cadastro()
-
-
-
