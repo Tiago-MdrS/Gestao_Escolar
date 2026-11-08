@@ -1,5 +1,4 @@
-﻿
-from datetime import datetime, timezone
+﻿from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select, func
@@ -30,6 +29,13 @@ def usuario_eh_professor(usuario: Usuario) -> bool:
     return (
         usuario.perfil is not None
         and usuario.perfil.nome.lower() == "professor"
+    )
+
+
+def usuario_pode_alterar_datas(usuario: Usuario) -> bool:
+    return (
+        usuario.perfil is not None
+        and usuario.perfil.nome.lower() in ("gestor", "administrador")
     )
 
 
@@ -74,6 +80,14 @@ def criar_calendario(
         require_permission("calendarios.criar")
     ),
 ):
+    if (
+        dados.data_inicio is not None
+        or dados.data_fim is not None
+    ) and not usuario_pode_alterar_datas(usuario):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Somente Gestores e Administradores podem definir as datas do calendário.",
+        )
     calendario = CalendarioEscolar(
         **dados.model_dump(),
         criado_por_id=usuario.id,
@@ -190,6 +204,17 @@ def atualizar_calendario(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Nenhum dado foi enviado para atualização.",
+        )
+
+    campos_datas = {"data_inicio", "data_fim"}
+
+    if (
+        campos_datas.intersection(atualizacoes)
+        and not usuario_pode_alterar_datas(usuario)
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Somente Gestores e Administradores podem alterar as datas do calendário.",
         )
 
     if "nome" in atualizacoes and atualizacoes["nome"] is None:
