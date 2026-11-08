@@ -1,10 +1,10 @@
-from datetime import date, datetime
+﻿from datetime import date, datetime
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class PeriodoLetivoBase(BaseModel):
-    ano_letivo: int = Field(ge=2000, le=2100)
+    calendario_id: int = Field(gt=0)
     nome: str = Field(min_length=2, max_length=50)
     ordem: int = Field(gt=0)
     data_inicio: date
@@ -32,8 +32,15 @@ class PeriodoLetivoUpdate(BaseModel):
     ativo: bool | None = None
 
 
-class PeriodoLetivoResponse(PeriodoLetivoBase):
+class PeriodoLetivoResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    calendario_id: int
+    ano_letivo: int
+    nome: str
+    ordem: int
+    data_inicio: date
+    data_fim: date
+    ativo: bool
     data_cadastro: datetime

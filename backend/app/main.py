@@ -1,5 +1,4 @@
-from app.api.routes import perfis
-from fastapi import FastAPI, HTTPException
+﻿from fastapi import FastAPI, HTTPException
 from sqlalchemy import text
 
 from app.core.config import settings
@@ -18,8 +17,13 @@ from app.api.routes import (
     turma_disciplinas,
     horarios,
     frequencias,
+    calendarios,
     periodos,
+    eventos_calendario,
     avaliacoes,
+    notas,
+    recuperacoes,
+    perfis,
 )
 
 
@@ -42,8 +46,14 @@ app.include_router(disciplinas.router)
 app.include_router(turma_disciplinas.router)
 app.include_router(horarios.router)
 app.include_router(frequencias.router)
+
+app.include_router(calendarios.router)
 app.include_router(periodos.router)
+app.include_router(eventos_calendario.router)
 app.include_router(avaliacoes.router)
+app.include_router(notas.router)
+app.include_router(recuperacoes.router)
+
 app.include_router(perfis.router)
 
 

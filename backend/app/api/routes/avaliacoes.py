@@ -1,4 +1,5 @@
-﻿from fastapi import APIRouter, Depends, HTTPException, Query, status
+﻿
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -7,6 +8,7 @@ from app.database import get_db
 from app.core.dependencies import require_permission
 from app.models import (
     Avaliacao,
+    CalendarioEscolar,
     PeriodoLetivo,
     TurmaDisciplina,
     Usuario,
@@ -97,11 +99,18 @@ def validar_periodo_avaliacao(
             detail="A data da avaliação deve estar dentro do período letivo.",
         )
 
-    if avaliacao_ativa and not periodo.ativo:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Não é possível criar ou manter uma avaliação ativa em um período letivo inativo.",
-        )
+    if avaliacao_ativa:
+        if not periodo.ativo:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Não é possível criar ou manter uma avaliação ativa em um período letivo inativo.",
+            )
+
+        if periodo.calendario.status != "publicado":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Não é possível criar ou manter uma avaliação ativa em um calendário não publicado.",
+            )
 
     return periodo
 
@@ -208,7 +217,16 @@ def listar_avaliacoes(
             )
 
         consulta = consulta.where(
-            TurmaDisciplina.professor_id == usuario.professor_id
+            TurmaDisciplina.professor_id == usuario.professor_id,
+            Avaliacao.ativa.is_(True),
+            PeriodoLetivo.ativo.is_(True),
+            CalendarioEscolar.status == "publicado",
+        ).join(
+            PeriodoLetivo,
+            Avaliacao.periodo_letivo_id == PeriodoLetivo.id,
+        ).join(
+            CalendarioEscolar,
+            PeriodoLetivo.calendario_id == CalendarioEscolar.id,
         )
 
     if turma_disciplina_id is not None:
@@ -272,6 +290,23 @@ def buscar_avaliacao(
         usuario,
         turma_disciplina,
     )
+
+    if usuario_eh_professor(usuario):
+        periodo = db.get(
+            PeriodoLetivo,
+            avaliacao.periodo_letivo_id,
+        )
+
+        if (
+            not avaliacao.ativa
+            or periodo is None
+            or not periodo.ativo
+            or periodo.calendario.status != "publicado"
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Avaliação não encontrada.",
+            )
 
     return avaliacao
 

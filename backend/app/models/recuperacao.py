@@ -1,9 +1,8 @@
-﻿from datetime import date, datetime
+﻿from datetime import datetime
 from decimal import Decimal
 
 from sqlalchemy import (
     CheckConstraint,
-    Date,
     DateTime,
     ForeignKey,
     Integer,
@@ -55,10 +54,6 @@ class Recuperacao(Base):
 
     nota: Mapped[Decimal] = mapped_column(
         Numeric(5, 2), nullable=False
-    )
-
-    data_recuperacao: Mapped[date] = mapped_column(
-        Date, nullable=False
     )
 
     observacao: Mapped[str | None] = mapped_column(

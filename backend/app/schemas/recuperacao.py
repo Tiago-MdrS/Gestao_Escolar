@@ -1,4 +1,4 @@
-﻿from datetime import date, datetime
+﻿from datetime import datetime
 from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -14,7 +14,6 @@ class RecuperacaoCreate(BaseModel):
         max_digits=5,
         decimal_places=2,
     )
-    data_recuperacao: date
     observacao: str | None = None
 
 
@@ -26,7 +25,6 @@ class RecuperacaoUpdate(BaseModel):
         max_digits=5,
         decimal_places=2,
     )
-    data_recuperacao: date | None = None
     observacao: str | None = None
 
 
@@ -38,7 +36,6 @@ class RecuperacaoResponse(BaseModel):
     turma_disciplina_id: int
     matricula_id: int
     nota: Decimal
-    data_recuperacao: date
     observacao: str | None
     registrada_por_id: int
     data_registro: datetime

@@ -89,6 +89,13 @@ PERMISSOES = [
     # Relat?rios acad?micos
     ("relatorios.desempenho", "Consultar desempenho acad?mico", "Consultar m?dias e desempenho dos alunos.", "relatorios"),
 
+    ("calendarios.listar", "Listar calendarios", "Consultar calendarios escolares.", "calendario"),
+    ("calendarios.criar", "Criar calendarios", "Criar calendarios escolares.", "calendario"),
+    ("calendarios.editar", "Editar calendarios", "Editar calendarios em rascunho.", "calendario"),
+    ("calendarios.publicar", "Publicar calendarios", "Aprovar e publicar calendarios escolares.", "calendario"),
+    ("calendarios.encerrar", "Encerrar calendarios", "Encerrar calendarios escolares.", "calendario"),
+    ("eventos.listar", "Listar eventos", "Consultar eventos do calendario escolar.", "calendario"),
+    ("eventos.gerenciar", "Gerenciar eventos", "Criar, editar e desativar eventos.", "calendario"),
 ]
 
 
@@ -147,6 +154,13 @@ PERFIS = {
             "recuperacoes.listar",
             "recuperacoes.gerenciar",
             "relatorios.desempenho",
+            "calendarios.listar",
+            "calendarios.criar",
+            "calendarios.editar",
+            "calendarios.publicar",
+            "calendarios.encerrar",
+            "eventos.listar",
+            "eventos.gerenciar",
         ],
     },
     "Gestor": {
@@ -195,6 +209,13 @@ PERFIS = {
             "recuperacoes.listar",
             "recuperacoes.gerenciar",
             "relatorios.desempenho",
+            "calendarios.listar",
+            "calendarios.criar",
+            "calendarios.editar",
+            "calendarios.publicar",
+            "calendarios.encerrar",
+            "eventos.listar",
+            "eventos.gerenciar",
         ],
     },
     "Secretaria": {
@@ -223,6 +244,12 @@ PERFIS = {
             "notas.listar",
             "recuperacoes.listar",
             "relatorios.desempenho",
+            "calendarios.listar",
+            "calendarios.criar",
+            "calendarios.editar",
+            "eventos.listar",
+            "eventos.gerenciar",
+            "periodos.gerenciar",
         ],
     },
     "Professor": {
@@ -243,6 +270,8 @@ PERFIS = {
             "recuperacoes.listar",
             "recuperacoes.gerenciar",
             "relatorios.desempenho",
+            "calendarios.listar",
+            "eventos.listar",
         ],
     },
 }

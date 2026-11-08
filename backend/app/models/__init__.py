@@ -11,7 +11,9 @@ from app.models.permissao import Permissao
 from app.models.usuario import Usuario
 from app.models.horario import Horario
 from app.models.frequencia import Frequencia
+from app.models.calendario_escolar import CalendarioEscolar
 from app.models.periodo_letivo import PeriodoLetivo
+from app.models.evento_calendario import EventoCalendario
 from app.models.avaliacao import Avaliacao
 from app.models.nota import Nota
 from app.models.recuperacao import Recuperacao
@@ -30,7 +32,9 @@ __all__ = [
     "Usuario",
     "Horario",
     "Frequencia",
+    "CalendarioEscolar",
     "PeriodoLetivo",
+    "EventoCalendario",
     "Avaliacao",
     "Nota",
     "Recuperacao",

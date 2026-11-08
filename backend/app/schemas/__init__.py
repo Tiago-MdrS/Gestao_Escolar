@@ -43,6 +43,13 @@ from app.schemas.recuperacao import (
     RecuperacaoUpdate,
     RecuperacaoResponse,
 )
+from app.schemas.evento_calendario import (
+    EventoCalendarioBase,
+    EventoCalendarioCreate,
+    EventoCalendarioUpdate,
+    EventoCalendarioResponse,
+    EventoCalendarioLoteCreate,
+)
 
 __all__ = [
     "AlunoBase",
@@ -70,4 +77,28 @@ __all__ = [
     "RecuperacaoCreate",
     "RecuperacaoUpdate",
     "RecuperacaoResponse",
+]
+
+from app.schemas.calendario_escolar import (
+    CalendarioEscolarCreate,
+    CalendarioEscolarUpdate,
+    CalendarioEscolarResponse,
+)
+
+from app.schemas.evento_calendario import (
+    EventoCalendarioBase,
+    EventoCalendarioCreate,
+    EventoCalendarioUpdate,
+    EventoCalendarioResponse,
+)
+
+__all__ += [
+    "CalendarioEscolarCreate",
+    "CalendarioEscolarUpdate",
+    "CalendarioEscolarResponse",
+    "EventoCalendarioBase",
+    "EventoCalendarioCreate",
+    "EventoCalendarioUpdate",
+    "EventoCalendarioResponse",
+    "EventoCalendarioLoteCreate",
 ]
