@@ -169,10 +169,17 @@ def obter_contexto_recuperacao(
         periodo.calendario_id,
     )
 
-    if calendario is None or calendario.status != "publicado":
+    if (
+        calendario is None
+        or calendario.status != "publicado"
+        or calendario.ano_letivo != periodo.ano_letivo
+    ):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="O calendário escolar não está publicado.",
+            detail=(
+                "O calendário escolar não está publicado "
+                "ou não corresponde ao ano do período letivo."
+            ),
         )
 
     if not periodo.ativo:
@@ -197,12 +204,25 @@ def obter_media_para_recuperacao(
         periodo_letivo_id=periodo_letivo_id,
     )
 
+    if desempenho["avaliacoes_pendentes"] > 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                "Não é possível registrar ou editar a recuperação "
+                "enquanto existirem avaliações sem nota. "
+                f"Avaliações pendentes: {desempenho['avaliacoes_pendentes']}."
+            ),
+        )
+
     media = desempenho["media"]
 
     if media is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Não existem notas lançadas para este aluno neste período e disciplina.",
+            detail=(
+                "Não existem avaliações ativas para calcular "
+                "o desempenho deste aluno neste período e disciplina."
+            ),
         )
 
     if media >= NOTA_MINIMA_APROVACAO:
@@ -323,8 +343,10 @@ def listar_recuperacoes(
                 TurmaDisciplina.turma.has(ativa=True),
                 PeriodoLetivo.ativo.is_(True),
                 CalendarioEscolar.status == "publicado",
+                CalendarioEscolar.ano_letivo == PeriodoLetivo.ano_letivo,
                 Matricula.situacao == "ativa",
                 Matricula.turma_id == TurmaDisciplina.turma_id,
+                Matricula.ano_letivo == PeriodoLetivo.ano_letivo,
             )
         )
 

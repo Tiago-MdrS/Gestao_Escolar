@@ -23,6 +23,7 @@ from app.api.routes import (
     avaliacoes,
     notas,
     recuperacoes,
+    relatorios,
     perfis,
 )
 
@@ -53,6 +54,7 @@ app.include_router(eventos_calendario.router)
 app.include_router(avaliacoes.router)
 app.include_router(notas.router)
 app.include_router(recuperacoes.router)
+app.include_router(relatorios.router)
 
 app.include_router(perfis.router)
 

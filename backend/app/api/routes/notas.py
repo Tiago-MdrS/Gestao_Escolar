@@ -188,11 +188,18 @@ def obter_contexto_nota(
         periodo.calendario_id,
     )
 
-    if calendario is None or calendario.status != "publicado":
+    if (
+    calendario is None
+    or calendario.status != "publicado"
+    or calendario.ano_letivo != periodo.ano_letivo
+):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="O calendário escolar não está publicado.",
-        )
+            detail=(
+                "O calendário escolar não está publicado "
+                "ou não corresponde ao ano do período letivo."
+            ),
+    )
 
     if not periodo.ativo:
         raise HTTPException(

@@ -9,6 +9,7 @@ from app.core.dependencies import require_permission
 from app.models import (
     Avaliacao,
     CalendarioEscolar,
+    Nota,
     PeriodoLetivo,
     TurmaDisciplina,
     Usuario,
@@ -311,6 +312,9 @@ def buscar_avaliacao(
     return avaliacao
 
 
+
+
+
 @router.put(
     "/{avaliacao_id}",
     response_model=AvaliacaoResponse,
@@ -341,15 +345,76 @@ def atualizar_avaliacao(
         turma_disciplina,
     )
 
-    atualizacoes = dados.model_dump(
-        exclude_unset=True,
-    )
+    atualizacoes = dados.model_dump(exclude_unset=True)
 
     if not atualizacoes:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Nenhum dado foi enviado para atualização.",
         )
+
+    # Impede valores nulos em campos obrigatórios.
+    campos_obrigatorios = {
+        "periodo_letivo_id",
+        "titulo",
+        "tipo",
+        "data_avaliacao",
+        "valor_maximo",
+        "peso",
+        "ativa",
+    }
+
+    for campo in campos_obrigatorios:
+        if campo in atualizacoes and atualizacoes[campo] is None:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"O campo '{campo}' não pode ser nulo.",
+            )
+
+    # Verifica se existem notas vinculadas à avaliação.
+    possui_notas = db.scalar(
+        select(Nota.id)
+        .where(Nota.avaliacao_id == avaliacao.id)
+        .limit(1)
+    )
+
+    if possui_notas is not None:
+        # Protege os campos que influenciam o histórico das médias.
+        campos_historicos = {
+            "periodo_letivo_id": "o período letivo",
+            "valor_maximo": "o valor máximo",
+            "peso": "o peso",
+        }
+
+        for campo, descricao in campos_historicos.items():
+            if (
+                campo in atualizacoes
+                and atualizacoes[campo] != getattr(avaliacao, campo)
+            ):
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail=(
+                        f"Não é possível alterar {descricao} de uma "
+                        "avaliação que já possui notas registradas. "
+                        "Essa alteração comprometeria o histórico "
+                        "acadêmico dos alunos."
+                    ),
+                )
+
+        # Impede desativação normal de avaliações com notas.
+        if (
+            "ativa" in atualizacoes
+            and avaliacao.ativa
+            and atualizacoes["ativa"] is False
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=(
+                    "Não é possível desativar uma avaliação que já "
+                    "possui notas registradas. Isso poderia alterar "
+                    "retroativamente as médias dos alunos."
+                ),
+            )
 
     periodo_letivo_id = atualizacoes.get(
         "periodo_letivo_id",
@@ -369,13 +434,19 @@ def atualizar_avaliacao(
     if avaliacao_ativa and not turma_disciplina.ativa:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Não é possível manter uma avaliação ativa em um vínculo inativo.",
+            detail=(
+                "Não é possível manter uma avaliação ativa "
+                "em um vínculo inativo."
+            ),
         )
 
     if avaliacao_ativa and not turma_disciplina.turma.ativa:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Não é possível manter uma avaliação ativa em uma turma inativa.",
+            detail=(
+                "Não é possível manter uma avaliação ativa "
+                "em uma turma inativa."
+            ),
         )
 
     validar_periodo_avaliacao(
@@ -396,7 +467,10 @@ def atualizar_avaliacao(
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Não foi possível atualizar a avaliação devido a um conflito de dados.",
+            detail=(
+                "Não foi possível atualizar a avaliação "
+                "devido a um conflito de dados."
+            ),
         )
 
     return avaliacao
