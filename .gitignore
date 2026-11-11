@@ -44,3 +44,17 @@ dist/
 # Sistema operacional
 .DS_Store
 Thumbs.db
+
+# Backups locais e cópias de revisão
+backup_*/
+**/backup_*/
+*.bak
+*.backup
+
+# Arquivos temporários de auditoria/revisão
+backend/revisao_*.txt
+backend/implementar_permissao_cancelamento.py
+backend/proteger_rotas.py
+
+# Artefatos locais
+*.dump
