@@ -1,8 +1,8 @@
-﻿# Gestão Escolar C.B.B.P.
+# Gestão Escolar C.B.B.P.
 
 Sistema de Gestão Escolar desenvolvido para o **Colégio Batista Bob Pierce (C.B.B.P.)**, com o objetivo de centralizar e modernizar os processos administrativos e acadêmicos da instituição.
 
-O projeto utiliza uma API REST em Python com FastAPI e uma aplicação web em React, com banco de dados PostgreSQL.
+O projeto utiliza uma API REST desenvolvida em Python com FastAPI, uma aplicação web em React e banco de dados PostgreSQL.
 
 ## Tecnologias utilizadas
 
@@ -36,7 +36,7 @@ O projeto utiliza uma API REST em Python com FastAPI e uma aplicação web em Re
 - [x] Cadastro e gerenciamento de disciplinas.
 - [x] Associação de disciplinas às turmas e professores.
 - [x] Controle de matrículas.
-- [x] Validação de matrícula ativa e capacidade de turmas.
+- [x] Validação de matrícula ativa e capacidade das turmas.
 
 ### Autenticação e autorização
 - [x] Login com autenticação JWT.
@@ -68,32 +68,51 @@ O projeto utiliza uma API REST em Python com FastAPI e uma aplicação web em Re
 - [x] Cadastro e gerenciamento de eventos do calendário.
 - [x] Relatórios acadêmicos.
 
-## Frontend
+## Funcionalidades do frontend
 
-O frontend está em sua etapa inicial de integração com a API.
+O frontend possui autenticação integrada ao backend, navegação protegida e páginas próprias para os principais módulos administrativos e acadêmicos.
 
-Funcionalidades já preparadas:
+### Estrutura e autenticação
 - [x] Estrutura React com TypeScript e Vite.
-- [x] Tela de login integrada ao endpoint de autenticação.
-- [x] Recuperação da sessão por meio de `/auth/me`.
+- [x] Tela de login integrada à API.
+- [x] Autenticação por token JWT.
+- [x] Recuperação da sessão por meio do endpoint `/auth/me`.
 - [x] Armazenamento local do token de acesso.
 - [x] Rotas protegidas para usuários autenticados.
-- [x] Layout principal com menu lateral responsivo.
-- [x] Organização inicial da navegação por perfil.
-- [x] Tema visual alinhado ao protótipo do sistema.
+- [x] Layout principal com menu lateral.
+- [x] Navegação organizada conforme os perfis de acesso.
+- [x] Tema visual baseado no protótipo do sistema.
 - [x] Proxy de desenvolvimento do Vite para a API.
 
-**Atenção:** as telas dos módulos acadêmicos ainda são provisórias e não representam CRUDs frontend concluídos. A integração de consultas, cadastros, atualizações e operações com a API será realizada progressivamente.
+### Módulos administrativos e acadêmicos
+- [x] Página de gerenciamento de alunos.
+- [x] Página de gerenciamento de turmas.
+- [x] Página de gerenciamento de responsáveis.
+- [x] Página de gerenciamento de matrículas.
+- [x] Página de gerenciamento de professores.
+- [x] Página de gerenciamento de disciplinas.
+- [x] Página de gerenciamento de horários.
+- [x] Seleção de turma, disciplina e professor nos vínculos utilizados pela grade horária.
+
+As páginas possuem interfaces próprias para consulta e gerenciamento dos respectivos módulos. A integração e validação dos fluxos com a API continuam em evolução.
+
+### Integração e controle de acesso
+- [x] Serviço centralizado para comunicação com a API.
+- [x] Integração da autenticação com o backend.
+- [x] Organização das rotas e páginas por módulo.
+- [ ] Concluir a aplicação das permissões em todas as ações da interface.
+- [ ] Ampliar a validação dos fluxos entre frontend e backend.
 
 ## Perfis de acesso
 
 O backend possui os seguintes perfis:
+
 - **Administrador:** gerenciamento geral do sistema.
 - **Gestor:** funcionalidades administrativas autorizadas.
 - **Secretaria:** operações escolares autorizadas.
 - **Professor:** funcionalidades relacionadas às suas turmas, disciplinas, horários e frequências.
 
-O acesso às operações é controlado pelas permissões cadastradas no backend. A integração completa dessas permissões com as ações da interface frontend ainda está em desenvolvimento.
+O acesso às operações é controlado pelas permissões cadastradas no backend. A aplicação dessas permissões em todas as funcionalidades da interface frontend está em desenvolvimento.
 
 ## Estrutura do projeto
 
@@ -261,17 +280,20 @@ npm run build
 
 ## Próximas etapas
 
-- [ ] Implementar os CRUDs frontend dos módulos acadêmicos.
-- [ ] Integrar alunos, responsáveis e vínculos à API.
-- [ ] Integrar turmas, disciplinas, professores e matrículas.
-- [ ] Integrar horários e frequência.
-- [ ] Integrar avaliações, notas e recuperações.
-- [ ] Integrar calendário escolar e relatórios.
-- [ ] Aplicar controle de permissões nas ações da interface.
-- [ ] Ampliar testes de integração entre frontend e backend.
+- [ ] Concluir e validar os fluxos de CRUD dos módulos frontend.
+- [ ] Aprimorar a integração de alunos, responsáveis e vínculos.
+- [ ] Aprimorar a integração de turmas, disciplinas, professores e matrículas.
+- [ ] Concluir a integração de horários e frequência.
+- [ ] Desenvolver a interface de avaliações, notas e recuperações.
+- [ ] Desenvolver a interface do calendário escolar e relatórios.
+- [ ] Aplicar e validar as permissões em todas as ações da interface.
+- [ ] Ampliar os testes de integração entre frontend e backend.
+- [ ] Realizar testes completos dos fluxos administrativos e acadêmicos.
 
 ## Status do projeto
 
 **Em desenvolvimento.**
 
-O backend já possui módulos administrativos e acadêmicos implementados. O frontend está estruturado, com autenticação integrada e navegação inicial, e seguirá em expansão até contemplar os fluxos completos do sistema.
+O backend já conta com módulos administrativos e acadêmicos, autenticação JWT, controle de permissões e regras de negócio. O frontend possui autenticação integrada, layout principal e páginas dedicadas aos principais módulos de gestão escolar.
+
+O desenvolvimento continua concentrado na evolução das interfaces, integração dos fluxos com a API, aplicação das permissões e validação do funcionamento completo do sistema.
