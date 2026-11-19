@@ -1,4 +1,4 @@
-﻿# Gestão Escolar C.B.B.P.
+# Gestão Escolar C.B.B.P.
 
 Sistema de Gestão Escolar desenvolvido para o **Colégio Batista Bob Pierce (C.B.B.P.)**, com o objetivo de centralizar e modernizar os processos administrativos e acadêmicos da instituição.
 
@@ -295,5 +295,6 @@ npm run build
 **Em desenvolvimento.**
 
 O backend já conta com módulos administrativos e acadêmicos, autenticação JWT, controle de permissões e regras de negócio. O frontend possui autenticação integrada, layout principal e páginas dedicadas aos principais módulos de gestão escolar.
+
 
 O desenvolvimento continua concentrado na evolução das interfaces, integração dos fluxos com a API, aplicação das permissões e validação do funcionamento completo do sistema.
