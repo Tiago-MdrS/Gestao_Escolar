@@ -1,6 +1,13 @@
-﻿from datetime import datetime, time
+﻿
+from datetime import datetime, time
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import (
+    AliasPath,
+    BaseModel,
+    ConfigDict,
+    Field,
+    model_validator,
+)
 
 
 class HorarioBase(BaseModel):
@@ -46,6 +53,37 @@ class HorarioResponse(BaseModel):
 
     id: int
     turma_disciplina_id: int
+
+    turma_id: int = Field(
+        validation_alias=AliasPath(
+            "turma_disciplina", "turma_id"
+        )
+    )
+
+    ano_letivo: int = Field(
+        validation_alias=AliasPath(
+            "turma_disciplina", "turma", "ano_letivo"
+        )
+    )
+
+    turma_nome: str = Field(
+        validation_alias=AliasPath(
+            "turma_disciplina", "turma", "nome"
+        )
+    )
+
+    disciplina_nome: str = Field(
+        validation_alias=AliasPath(
+            "turma_disciplina", "disciplina", "nome"
+        )
+    )
+
+    professor_nome: str = Field(
+        validation_alias=AliasPath(
+            "turma_disciplina", "professor", "nome_completo"
+        )
+    )
+
     dia_semana: int
     hora_inicio: time
     hora_fim: time

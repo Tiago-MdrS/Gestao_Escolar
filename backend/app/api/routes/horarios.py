@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import or_, select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.core.dependencies import get_current_user, require_permission
 from app.database import get_db
@@ -30,6 +30,27 @@ def usuario_eh_professor(usuario: Usuario) -> bool:
     return (
         usuario.perfil is not None
         and usuario.perfil.nome.lower() == "professor"
+    )
+
+
+def consulta_horario_completo():
+    """
+    Carrega os dados da atribuição, turma, disciplina e professor
+    junto com o horário.
+    """
+    return (
+        select(Horario)
+        .options(
+            joinedload(Horario.turma_disciplina).joinedload(
+                TurmaDisciplina.turma
+            ),
+            joinedload(Horario.turma_disciplina).joinedload(
+                TurmaDisciplina.disciplina
+            ),
+            joinedload(Horario.turma_disciplina).joinedload(
+                TurmaDisciplina.professor
+            ),
+        )
     )
 
 
@@ -233,6 +254,14 @@ def criar_horario(
         db.commit()
         db.refresh(horario)
 
+        horario_id = horario.id
+
+        horario = db.scalar(
+            consulta_horario_completo().where(
+                Horario.id == horario_id
+            )
+        )
+
     except IntegrityError:
         db.rollback()
 
@@ -263,7 +292,7 @@ def listar_meus_horarios(
     verificar_professor_ativo(db, usuario)
 
     consulta = (
-        select(Horario)
+        consulta_horario_completo()
         .join(
             TurmaDisciplina,
             Horario.turma_disciplina_id == TurmaDisciplina.id,
@@ -316,7 +345,7 @@ def listar_horarios(
     limit: int = Query(default=100, ge=1, le=500),
 ):
     consulta = (
-        select(Horario)
+        consulta_horario_completo()
         .join(
             TurmaDisciplina,
             Horario.turma_disciplina_id == TurmaDisciplina.id,
@@ -380,7 +409,7 @@ def buscar_horario(
     ),
 ):
     consulta = (
-        select(Horario)
+        consulta_horario_completo()
         .join(
             TurmaDisciplina,
             Horario.turma_disciplina_id == TurmaDisciplina.id,
@@ -523,6 +552,14 @@ def atualizar_horario(
         db.commit()
         db.refresh(horario)
 
+        horario_id = horario.id
+
+        horario = db.scalar(
+            consulta_horario_completo().where(
+                Horario.id == horario_id
+            )
+        )
+
     except IntegrityError:
         db.rollback()
 
@@ -566,4 +603,66 @@ def inativar_horario(
     return {
         "mensagem": "Horário inativado com sucesso.",
         "horario_id": horario.id,
+    }
+
+
+@router.delete(
+    "/{horario_id}/excluir",
+    status_code=status.HTTP_200_OK,
+    dependencies=[
+        Depends(require_permission("horarios.gerenciar"))
+    ],
+)
+def excluir_horario(
+    horario_id: int,
+    db: Session = Depends(get_db),
+):
+    horario = db.scalar(
+        select(Horario)
+        .where(Horario.id == horario_id)
+        .with_for_update()
+    )
+
+    if horario is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Horário não encontrado.",
+        )
+
+    possui_frequencias = db.scalar(
+        select(Frequencia.id)
+        .where(Frequencia.horario_id == horario.id)
+        .limit(1)
+    )
+
+    if possui_frequencias is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                "Não é possível excluir definitivamente este horário "
+                "porque existem frequências registradas. "
+                "Utilize a opção de inativar para preservar o histórico."
+            ),
+        )
+
+    try:
+        horario_id_excluido = horario.id
+
+        db.delete(horario)
+        db.commit()
+
+    except IntegrityError:
+        db.rollback()
+
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                "Não foi possível excluir este horário porque existem "
+                "outros registros vinculados a ele."
+            ),
+        )
+
+    return {
+        "mensagem": "Horário excluído definitivamente com sucesso.",
+        "horario_id": horario_id_excluido,
     }

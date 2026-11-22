@@ -21,6 +21,7 @@ import {
   RefreshCw,
   RotateCcw,
   CalendarClock,
+  Trash2,
 } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 import { api } from "../services/api";
@@ -28,6 +29,9 @@ import { api } from "../services/api";
 interface Horario {
   id: number;
   turma_disciplina_id: number;
+  turma_nome: string;
+  disciplina_nome: string;
+  professor_nome: string;
   dia_semana: number;
   hora_inicio: string;
   hora_fim: string;
@@ -122,11 +126,7 @@ function getErrorMessage(error: unknown): string {
     }
 
     if (error.response?.status === 409) {
-      return (
-        typeof detail === "string"
-          ? detail
-          : "Conflito de horário: verifique a turma, o professor e a sala."
-      );
+      return "Conflito ou restrição: verifique os registros vinculados a este horário.";
     }
 
     if (!error.response) {
@@ -139,6 +139,14 @@ function getErrorMessage(error: unknown): string {
 
 function formatarHora(hora: string): string {
   return hora.slice(0, 5);
+}
+
+function normalizarTexto(valor: string): string {
+  return valor
+    .toLocaleLowerCase("pt-BR")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
 }
 
 export default function HorariosPage() {
@@ -274,40 +282,11 @@ export default function HorariosPage() {
     [atribuicoes],
   );
 
-  const obterNomeTurma = useCallback(
-    (turmaId: number) => {
-      const turma = turmas.find((item) => item.id === turmaId);
-
-      if (!turma) return `Turma #${turmaId}`;
-
-      return turma.nome || `${turma.serie} ${turma.etapa}`;
-    },
-    [turmas],
-  );
-
-  const obterNomeDisciplina = useCallback(
-    (disciplinaId: number) =>
-      disciplinas.find((item) => item.id === disciplinaId)?.nome ??
-      `Disciplina #${disciplinaId}`,
-    [disciplinas],
-  );
-
-  const obterNomeProfessor = useCallback(
-    (professorId: number) =>
-      professores.find((item) => item.id === professorId)?.nome_completo ??
-      `Professor #${professorId}`,
-    [professores],
-  );
-
   const activeCount = horarios.filter((horario) => horario.ativo).length;
   const inactiveCount = horarios.length - activeCount;
 
   const filteredHorarios = useMemo(() => {
-    const normalizedSearch = search
-      .toLocaleLowerCase("pt-BR")
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .trim();
+    const normalizedSearch = normalizarTexto(search);
 
     return horarios
       .filter((horario) => {
@@ -315,29 +294,19 @@ export default function HorariosPage() {
           (item) => item.id === horario.turma_disciplina_id,
         );
 
-        const turmaNome = atribuicao
-          ? obterNomeTurma(atribuicao.turma_id)
-          : `Turma ${horario.turma_disciplina_id}`;
+        const turmaNome = horario.turma_nome || "";
+        const disciplinaNome = horario.disciplina_nome || "";
+        const professorNome = horario.professor_nome || "";
 
-        const disciplinaNome = atribuicao
-          ? obterNomeDisciplina(atribuicao.disciplina_id)
-          : "";
-
-        const professorNome = atribuicao
-          ? obterNomeProfessor(atribuicao.professor_id)
-          : "";
-
-        const searchable = [
-          turmaNome,
-          disciplinaNome,
-          professorNome,
-          horario.sala ?? "",
-          diasSemana[horario.dia_semana],
-        ]
-          .join(" ")
-          .toLocaleLowerCase("pt-BR")
-          .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, "");
+        const searchable = normalizarTexto(
+          [
+            turmaNome,
+            disciplinaNome,
+            professorNome,
+            horario.sala ?? "",
+            diasSemana[horario.dia_semana] ?? "",
+          ].join(" "),
+        );
 
         const matchesSearch =
           !normalizedSearch || searchable.includes(normalizedSearch);
@@ -388,9 +357,6 @@ export default function HorariosPage() {
     filterDisciplina,
     filterDia,
     filterStatus,
-    obterNomeTurma,
-    obterNomeDisciplina,
-    obterNomeProfessor,
   ]);
 
   const totalPages = Math.max(
@@ -566,6 +532,8 @@ export default function HorariosPage() {
   }
 
   async function handleDeactivate(horario: Horario) {
+    if (!canManage || !horario.ativo) return;
+
     const confirmed = window.confirm(
       "Deseja realmente inativar este horário?\n\nO registro será mantido no histórico do sistema.",
     );
@@ -577,7 +545,7 @@ export default function HorariosPage() {
     try {
       await api.delete(`/horarios/${horario.id}`);
 
-      if (modalMode === "details") {
+      if (selectedHorario?.id === horario.id) {
         setModalMode(null);
         setSelectedHorario(null);
       }
@@ -604,13 +572,47 @@ export default function HorariosPage() {
         ativo: true,
       });
 
-      if (modalMode === "details") {
+      if (selectedHorario?.id === horario.id) {
         setModalMode(null);
         setSelectedHorario(null);
       }
 
       await loadData();
     } catch (err) {
+      setError(getErrorMessage(err));
+    }
+  }
+
+  async function handleDelete(horario: Horario) {
+    if (!canManage) return;
+
+    const confirmed = window.confirm(
+      `ATENÇÃO: esta ação é permanente!\n\n` +
+        `Deseja excluir definitivamente o horário de ${horario.turma_nome}, ` +
+        `${horario.disciplina_nome}, ministrado por ${horario.professor_nome}?\n\n` +
+        `O registro será removido do banco de dados. Se houver frequências ou outros registros vinculados, a exclusão será bloqueada.`,
+    );
+
+    if (!confirmed) return;
+
+    setError("");
+
+    try {
+      await api.delete(`/horarios/${horario.id}/excluir`);
+
+      if (selectedHorario?.id === horario.id) {
+        setModalMode(null);
+        setSelectedHorario(null);
+      }
+
+      await loadData();
+    } catch (err) {
+      // Fecha o modal para que o aviso de erro fique visível na página.
+      if (selectedHorario?.id === horario.id) {
+        setModalMode(null);
+        setSelectedHorario(null);
+      }
+
       setError(getErrorMessage(err));
     }
   }
@@ -810,102 +812,98 @@ export default function HorariosPage() {
                 </thead>
 
                 <tbody>
-                  {paginatedHorarios.map((horario) => {
-                    const atribuicao = obterAtribuicao(horario);
+                  {paginatedHorarios.map((horario) => (
+                    <tr key={horario.id}>
+                      <td>
+                        <strong>
+                          {horario.turma_nome || "Não disponível"}
+                        </strong>
+                      </td>
 
-                    return (
-                      <tr key={horario.id}>
-                        <td>
-                          <strong>
-                            {atribuicao
-                              ? obterNomeTurma(atribuicao.turma_id)
-                              : `Vínculo #${horario.turma_disciplina_id}`}
-                          </strong>
-                        </td>
+                      <td>
+                        {horario.disciplina_nome || "Não disponível"}
+                      </td>
 
-                        <td>
-                          {atribuicao
-                            ? obterNomeDisciplina(atribuicao.disciplina_id)
-                            : "Não disponível"}
-                        </td>
+                      <td>
+                        {horario.professor_nome || "Não disponível"}
+                      </td>
 
-                        <td>
-                          {atribuicao
-                            ? obterNomeProfessor(atribuicao.professor_id)
-                            : "Não disponível"}
-                        </td>
+                      <td>
+                        <span className="schedules-day">
+                          {diasSemana[horario.dia_semana] ?? "Não informado"}
+                        </span>
+                      </td>
 
-                        <td>
-                          <span className="schedules-day">
-                            {diasSemana[horario.dia_semana]}
-                          </span>
-                        </td>
+                      <td>
+                        <span className="schedules-hours">
+                          <Clock3 size={14} />
+                          {formatarHora(horario.hora_inicio)} –{" "}
+                          {formatarHora(horario.hora_fim)}
+                        </span>
+                      </td>
 
-                        <td>
-                          <span className="schedules-hours">
-                            <Clock3 size={14} />
-                            {formatarHora(horario.hora_inicio)} –{" "}
-                            {formatarHora(horario.hora_fim)}
-                          </span>
-                        </td>
+                      <td>{horario.sala || "—"}</td>
 
-                        <td>{horario.sala || "—"}</td>
+                      <td>
+                        <span
+                          className={`schedules-status ${
+                            horario.ativo ? "active" : "inactive"
+                          }`}
+                        >
+                          {horario.ativo ? "Ativo" : "Inativo"}
+                        </span>
+                      </td>
 
-                        <td>
-                          <span
-                            className={`schedules-status ${
-                              horario.ativo ? "active" : "inactive"
-                            }`}
+                      <td>
+                        <div className="schedules-actions">
+                          <button
+                            onClick={() => openDetails(horario)}
+                            title="Visualizar horário"
                           >
-                            {horario.ativo ? "Ativo" : "Inativo"}
-                          </span>
-                        </td>
+                            <Eye size={17} />
+                          </button>
 
-                        <td>
-                          <div className="schedules-actions">
+                          {canManage && horario.ativo && (
                             <button
-                              onClick={() => openDetails(horario)}
-                              title="Visualizar horário"
+                              onClick={() => openEdit(horario)}
+                              title="Editar horário"
                             >
-                              <Eye size={17} />
+                              <Pencil size={17} />
                             </button>
+                          )}
 
-                            {canManage && horario.ativo && (
-                              <button
-                                onClick={() => openEdit(horario)}
-                                title="Editar horário"
-                              >
-                                <Pencil size={17} />
-                              </button>
-                            )}
+                          {canManage && horario.ativo && (
+                            <button
+                              className="danger"
+                              onClick={() => void handleDeactivate(horario)}
+                              title="Inativar horário"
+                            >
+                              <UserX size={17} />
+                            </button>
+                          )}
 
-                            {canManage && horario.ativo && (
-                              <button
-                                className="danger"
-                                onClick={() =>
-                                  void handleDeactivate(horario)
-                                }
-                                title="Inativar horário"
-                              >
-                                <UserX size={17} />
-                              </button>
-                            )}
+                          {canManage && !horario.ativo && (
+                            <button
+                              onClick={() => void handleReactivate(horario)}
+                              title="Reativar horário"
+                            >
+                              <RotateCcw size={17} />
+                            </button>
+                          )}
 
-                            {canManage && !horario.ativo && (
-                              <button
-                                onClick={() =>
-                                  void handleReactivate(horario)
-                                }
-                                title="Reativar horário"
-                              >
-                                <RotateCcw size={17} />
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                          {canManage && (
+                            <button
+                              className="danger"
+                              onClick={() => void handleDelete(horario)}
+                              title="Excluir permanentemente"
+                            >
+                              <Trash2 size={17} />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
 
                   {paginatedHorarios.length === 0 && (
                     <tr>
@@ -1013,9 +1011,7 @@ export default function HorariosPage() {
 
                         <div>
                           <h4>
-                            {atribuicao
-                              ? obterNomeTurma(atribuicao.turma_id)
-                              : `Vínculo #${selectedHorario.turma_disciplina_id}`}
+                            {selectedHorario.turma_nome || "Não disponível"}
                           </h4>
 
                           <span
@@ -1032,25 +1028,24 @@ export default function HorariosPage() {
                         <div>
                           <span>Disciplina</span>
                           <strong>
-                            {atribuicao
-                              ? obterNomeDisciplina(atribuicao.disciplina_id)
-                              : "Não disponível"}
+                            {selectedHorario.disciplina_nome ||
+                              "Não disponível"}
                           </strong>
                         </div>
 
                         <div>
                           <span>Professor</span>
                           <strong>
-                            {atribuicao
-                              ? obterNomeProfessor(atribuicao.professor_id)
-                              : "Não disponível"}
+                            {selectedHorario.professor_nome ||
+                              "Não disponível"}
                           </strong>
                         </div>
 
                         <div>
                           <span>Dia da semana</span>
                           <strong>
-                            {diasSemana[selectedHorario.dia_semana]}
+                            {diasSemana[selectedHorario.dia_semana] ??
+                              "Não informado"}
                           </strong>
                         </div>
 
@@ -1112,12 +1107,20 @@ export default function HorariosPage() {
                   {canManage && !selectedHorario.ativo && (
                     <button
                       className="schedules-primary-button"
-                      onClick={() =>
-                        void handleReactivate(selectedHorario)
-                      }
+                      onClick={() => void handleReactivate(selectedHorario)}
                     >
                       <RotateCcw size={16} />
                       Reativar horário
+                    </button>
+                  )}
+
+                  {canManage && (
+                    <button
+                      className="schedules-delete-button"
+                      onClick={() => void handleDelete(selectedHorario)}
+                    >
+                      <Trash2 size={16} />
+                      Excluir permanentemente
                     </button>
                   )}
                 </footer>
@@ -1158,10 +1161,7 @@ export default function HorariosPage() {
                       <option value="">Selecione uma disciplina</option>
 
                       {disciplinasDisponiveis.map((disciplina) => (
-                        <option
-                          key={disciplina.id}
-                          value={disciplina.id}
-                        >
+                        <option key={disciplina.id} value={disciplina.id}>
                           {disciplina.nome}
                         </option>
                       ))}
@@ -1181,10 +1181,7 @@ export default function HorariosPage() {
                       <option value="">Selecione um professor</option>
 
                       {professoresDisponiveis.map((professor) => (
-                        <option
-                          key={professor.id}
-                          value={professor.id}
-                        >
+                        <option key={professor.id} value={professor.id}>
                           {professor.nome_completo}
                         </option>
                       ))}
