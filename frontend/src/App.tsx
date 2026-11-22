@@ -12,6 +12,8 @@ import ProfessoresPage from "./pages/ProfessoresPage";
 import DisciplinasPage from "./pages/DisciplinasPage";
 import MatriculasPage from "./pages/MatriculasPage";
 import HorariosPage from "./pages/HorariosPage";
+import VinculosPage from "./pages/VinculosPage";
+import FrequenciaPage from "./pages/FrequenciaPage";
 
 import TurmasPage from "./pages/TurmasPage";
 
@@ -38,8 +40,10 @@ export default function App() {
           <Route path="professores" element={<ProfessoresPage />} />
           <Route path="matriculas" element={<MatriculasPage />} />
           <Route path="disciplinas" element={<DisciplinasPage />} />
-          <Route path="/horarios" element={<HorariosPage />} />
-          
+          <Route path="horarios" element={<HorariosPage />} />
+          <Route path="vinculos" element={<VinculosPage />} />
+          <Route path="frequencias" element={<FrequenciaPage />} />
+
           <Route path="*" element={<PlaceholderPage />} />
         </Route>
       </Route>

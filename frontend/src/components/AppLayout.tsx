@@ -1,4 +1,5 @@
-﻿import { useState } from "react";
+﻿
+import { useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   BookOpen,
@@ -16,6 +17,7 @@ import {
   Users,
   UserRound,
   Clock3,
+  Link2,
 } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 
@@ -39,11 +41,11 @@ const managerItems: MenuItem[] = [
   { label: "Matrículas", to: "/matriculas", icon: ClipboardCheck },
   { label: "Horários", to: "/horarios", icon: Clock3 },
   { label: "Usuários e perfis", to: "/usuarios", icon: ShieldCheck },
+  { label: "Vínculos", to: "/vinculos", icon: Link2 },
 ];
 
 const teacherItems: MenuItem[] = [
   { label: "Meus horários", to: "/horarios", icon: Clock3 },
-  { label: "Frequências", to: "/frequencias", icon: ClipboardCheck },
   { label: "Avaliações", to: "/avaliacoes", icon: NotebookTabs },
   { label: "Notas", to: "/notas", icon: BookOpen },
   { label: "Recuperações", to: "/recuperacoes", icon: GraduationCap },
@@ -55,6 +57,12 @@ const secretaryItems: MenuItem[] = [
   { label: "Matrículas", to: "/matriculas", icon: ClipboardCheck },
   { label: "Calendários", to: "/calendarios", icon: CalendarDays },
 ];
+
+const frequencyItem: MenuItem = {
+  label: "Frequências",
+  to: "/frequencias",
+  icon: ClipboardCheck,
+};
 
 export default function AppLayout() {
   const { user, signOut } = useAuth();
@@ -77,9 +85,27 @@ export default function AppLayout() {
       ? secretaryItems
       : managerItems;
 
-  const items = isManager
-    ? [...commonItems, ...managerItems]
-    : [...commonItems, ...roleItems];
+  const permissions = user?.permissoes ?? [];
+
+  const hasFrequencyAccess = [
+    "frequencia.listar",
+    "frequencia.registrar",
+    "frequencia.consultar_propria",
+  ].some((permission) => permissions.includes(permission));
+
+  const filteredRoleItems = isManager
+    ? roleItems.filter(
+        (item) =>
+          item.to !== "/vinculos" ||
+          permissions.includes("turma_disciplinas.listar")
+      )
+    : roleItems;
+
+  const items = [
+    ...commonItems,
+    ...filteredRoleItems,
+    ...(hasFrequencyAccess ? [frequencyItem] : []),
+  ];
 
   const link = (item: MenuItem) => {
     const Icon = item.icon;
