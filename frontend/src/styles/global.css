@@ -2480,9 +2480,6 @@ textarea {
   }
 }
 
-/* =========================================
-   HORÁRIOS DE AULAS
-========================================= */
 
 .schedules-page {
   display: flex;
@@ -3201,3 +3198,696 @@ textarea {
   }
 }
 
+
+.schedules-actions button.danger {
+  color: #dc2626;
+}
+
+.schedules-actions button.danger:hover {
+  color: #b91c1c;
+  background: #fef2f2;
+}
+
+.schedules-delete-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: #fff;
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.schedules-delete-button:hover {
+  background: #fef2f2;
+  border-color: #fca5a5;
+}
+
+/* ==========================================================
+   FREQUÊNCIA ESCOLAR
+   ========================================================== */
+
+.frequency-page {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  color: #2b2f36;
+}
+
+.frequency-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.frequency-eyebrow {
+  color: #ea580c;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+}
+
+.frequency-heading h2 {
+  margin: 6px 0;
+  font-size: 25px;
+  font-weight: 750;
+}
+
+.frequency-heading p,
+.frequency-panel-header p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.frequency-refresh-button,
+.frequency-primary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 15px;
+  border: 0;
+  border-radius: 8px;
+  background: #ea580c;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.frequency-refresh-button {
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #4b5563;
+}
+
+.frequency-primary-button:hover {
+  background: #c94b0a;
+}
+
+.frequency-refresh-button:hover {
+  background: #f9fafb;
+}
+
+.frequency-primary-button:disabled,
+.frequency-refresh-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.frequency-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 15px;
+  border: 1px solid;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.frequency-alert-error {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.frequency-alert-success {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.frequency-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.frequency-stat {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-height: 91px;
+  padding: 17px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.frequency-stat-icon {
+  display: grid;
+  width: 43px;
+  height: 43px;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 9px;
+}
+
+.frequency-icon-total {
+  background: #ffedd5;
+  color: #ea580c;
+}
+
+.frequency-icon-present {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.frequency-icon-absent {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.frequency-icon-justified {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.frequency-stat span {
+  display: block;
+  margin-bottom: 5px;
+  color: #6b7280;
+  font-size: 11px;
+}
+
+.frequency-stat strong {
+  color: #2b2f36;
+  font-size: 22px;
+  font-weight: 750;
+}
+
+.frequency-tabs {
+  display: flex;
+  gap: 7px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.frequency-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.frequency-tabs button.active {
+  background: #fff7ed;
+  color: #ea580c;
+}
+
+.frequency-panel {
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.frequency-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 22px;
+  border-bottom: 1px solid #f0f1f3;
+}
+
+.frequency-panel-header h3 {
+  margin: 0 0 6px;
+  color: #2b2f36;
+  font-size: 16px;
+  font-weight: 750;
+}
+
+.frequency-panel-header > svg {
+  color: #ea580c;
+}
+
+.frequency-call-filters {
+  display: grid;
+  grid-template-columns: minmax(160px, 0.8fr) minmax(250px, 1.5fr) auto;
+  align-items: end;
+  gap: 15px;
+  padding: 22px;
+}
+
+.frequency-field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 7px;
+  color: #374151;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.frequency-field input,
+.frequency-field select {
+  width: 100%;
+  height: 40px;
+  padding: 0 11px;
+  border: 1px solid #e5e7eb;
+  border-radius: 7px;
+  outline: none;
+  background: #fff;
+  color: #374151;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.frequency-field input:focus,
+.frequency-field select:focus,
+.frequency-observation-input:focus,
+.frequency-situation-select:focus {
+  border-color: #fb923c;
+  box-shadow: 0 0 0 3px rgb(234 88 12 / 9%);
+}
+
+.frequency-class-info {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0 22px 22px;
+  padding: 16px;
+  border: 1px solid #fed7aa;
+  border-radius: 8px;
+  background: #fff7ed;
+}
+
+.frequency-class-info div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.frequency-class-info span {
+  color: #9a3412;
+  font-size: 10px;
+}
+
+.frequency-class-info strong {
+  overflow-wrap: anywhere;
+  color: #374151;
+  font-size: 12px;
+}
+
+.frequency-list-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 17px 22px;
+  border-top: 1px solid #f0f1f3;
+}
+
+.frequency-list-toolbar h4 {
+  margin: 0 0 5px;
+  color: #2b2f36;
+  font-size: 14px;
+}
+
+.frequency-list-toolbar span {
+  color: #9ca3af;
+  font-size: 11px;
+}
+
+.frequency-bulk-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.frequency-bulk-actions button,
+.frequency-edit-small {
+  padding: 8px 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 7px;
+  background: #fff;
+  color: #4b5563;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.frequency-bulk-actions button:hover,
+.frequency-edit-small:hover {
+  border-color: #fdba74;
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.frequency-search {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 39px;
+  padding: 0 11px;
+  border: 1px solid #e5e7eb;
+  border-radius: 7px;
+  background: #fff;
+  color: #9ca3af;
+}
+
+.frequency-search:focus-within {
+  border-color: #fb923c;
+  box-shadow: 0 0 0 3px rgb(234 88 12 / 9%);
+}
+
+.frequency-search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: #374151;
+  font-size: 12px;
+}
+
+.frequency-page > .frequency-panel > .frequency-search {
+  margin: 0 22px 15px;
+}
+
+.frequency-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.frequency-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.frequency-table th {
+  padding: 12px 15px;
+  border-top: 1px solid #f0f1f3;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+  color: #6b7280;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.frequency-table td {
+  padding: 13px 15px;
+  border-bottom: 1px solid #f0f1f3;
+  color: #4b5563;
+  font-size: 12px;
+  vertical-align: middle;
+}
+
+.frequency-table tbody tr:hover {
+  background: #fafafa;
+}
+
+.frequency-table td strong {
+  display: block;
+  color: #374151;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.frequency-table td small {
+  display: block;
+  margin-top: 5px;
+  color: #9ca3af;
+  font-size: 10px;
+}
+
+.frequency-situation-select,
+.frequency-observation-input {
+  width: 100%;
+  min-width: 125px;
+  height: 35px;
+  padding: 0 9px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  outline: none;
+  background: #fff;
+  color: #374151;
+  font-size: 11px;
+}
+
+.frequency-observation-input {
+  min-width: 150px;
+}
+
+.frequency-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 8px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.frequency-status-presente {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.frequency-status-falta {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.frequency-status-falta_justificada {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.frequency-recorded,
+.frequency-pending {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.frequency-recorded {
+  color: #15803d;
+}
+
+.frequency-pending {
+  color: #d97706;
+}
+
+.frequency-call-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 17px 22px;
+  border-top: 1px solid #f0f1f3;
+}
+
+.frequency-call-footer > span {
+  color: #6b7280;
+  font-size: 11px;
+}
+
+.frequency-history-filters {
+  display: grid;
+  grid-template-columns: minmax(200px, 2fr) repeat(4, minmax(120px, 1fr));
+  align-items: end;
+  gap: 12px;
+  padding: 20px 22px;
+}
+
+.frequency-search-field .frequency-search {
+  width: 100%;
+}
+
+.frequency-save-small {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: #ea580c;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.frequency-save-small:hover {
+  background: #c94b0a;
+}
+
+.frequency-save-small:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.frequency-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 15px 20px;
+  border-top: 1px solid #f0f1f3;
+}
+
+.frequency-pagination > span,
+.frequency-pagination div span {
+  color: #6b7280;
+  font-size: 11px;
+}
+
+.frequency-pagination div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.frequency-pagination button {
+  padding: 7px 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #fff;
+  color: #4b5563;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.frequency-pagination button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.frequency-table-empty,
+.frequency-empty {
+  padding: 30px 20px !important;
+  color: #9ca3af !important;
+  text-align: center;
+  font-size: 12px;
+}
+
+.frequency-filter-error {
+  padding: 0 22px 12px;
+  color: #b91c1c;
+  font-size: 11px;
+}
+
+.frequency-access-denied {
+  display: flex;
+  min-height: 300px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  text-align: center;
+}
+
+.frequency-access-denied svg {
+  margin-bottom: 12px;
+  color: #ea580c;
+}
+
+.frequency-access-denied h2 {
+  margin: 0 0 7px;
+  color: #2b2f36;
+  font-size: 20px;
+}
+
+.frequency-access-denied p {
+  margin: 0;
+  font-size: 13px;
+}
+
+@media (max-width: 1100px) {
+  .frequency-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .frequency-history-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .frequency-search-field {
+    grid-column: 1 / -1;
+  }
+
+  .frequency-class-info {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .frequency-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .frequency-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .frequency-call-filters,
+  .frequency-history-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .frequency-search-field {
+    grid-column: auto;
+  }
+
+  .frequency-class-info {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .frequency-list-toolbar,
+  .frequency-call-footer,
+  .frequency-pagination {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .frequency-bulk-actions {
+    width: 100%;
+  }
+
+  .frequency-bulk-actions button {
+    flex: 1;
+  }
+
+  .frequency-pagination div {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .frequency-tabs {
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 420px) {
+  .frequency-class-info {
+    grid-template-columns: 1fr;
+  }
+}
