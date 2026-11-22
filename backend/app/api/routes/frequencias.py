@@ -4,7 +4,7 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app.core.dependencies import require_permission
 from app.database import get_db
@@ -20,11 +20,11 @@ from app.models.disciplina import Disciplina
 from app.models.professor import Professor
 from app.models.turma import Turma
 from app.schemas.frequencia import (
+    FrequenciaChamadaAlunoResponse,
     FrequenciaCreate,
     FrequenciaResponse,
     FrequenciaUpdate,
 )
-
 
 router = APIRouter(
     prefix="/frequencias",
@@ -262,6 +262,7 @@ def registrar_frequencia(
 
     frequencia = Frequencia(
         aluno_id=dados.aluno_id,
+        aluno=aluno,
         horario_id=dados.horario_id,
         data_aula=dados.data_aula,
         situacao=dados.situacao,
@@ -312,6 +313,7 @@ def listar_frequencias(
 
     consulta = (
         select(Frequencia)
+        .options(selectinload(Frequencia.aluno))
         .join(
             Horario,
             Frequencia.horario_id == Horario.id,
@@ -398,6 +400,7 @@ def listar_minhas_frequencias(
 
     consulta = (
         select(Frequencia)
+        .options(selectinload(Frequencia.aluno))
         .join(
             Horario,
             Frequencia.horario_id == Horario.id,
@@ -444,6 +447,119 @@ def listar_minhas_frequencias(
     return db.scalars(consulta).all()
 
 
+# IMPORTANTE: /chamada precisa ficar antes de /{frequencia_id}.
+@router.get(
+    "/chamada",
+    response_model=list[FrequenciaChamadaAlunoResponse],
+)
+def listar_alunos_chamada(
+    horario_id: int = Query(gt=0),
+    data_aula: date = Query(),
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(
+        require_permission("frequencia.registrar")
+    ),
+):
+    horario = db.get(Horario, horario_id)
+
+    if horario is None or not horario.ativo:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Horário não encontrado ou inativo.",
+        )
+
+    if horario.dia_semana != data_aula.weekday():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                "A data informada não corresponde ao dia da semana "
+                "do horário."
+            ),
+        )
+
+    turma_disciplina = db.get(
+        TurmaDisciplina,
+        horario.turma_disciplina_id,
+    )
+
+    if turma_disciplina is None or not turma_disciplina.ativa:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="O vínculo entre turma, disciplina e professor está inativo.",
+        )
+
+    verificar_acesso_professor(
+        db,
+        usuario,
+        turma_disciplina,
+    )
+
+    turma = db.get(Turma, turma_disciplina.turma_id)
+
+    if turma is None or not turma.ativa:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A turma está inativa ou não existe.",
+        )
+
+    if turma.ano_letivo != data_aula.year:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="A data da aula não pertence ao ano letivo da turma.",
+        )
+
+    alunos = db.scalars(
+        select(Aluno)
+        .join(
+            Matricula,
+            Matricula.aluno_id == Aluno.id,
+        )
+        .where(
+            Aluno.status == "ativo",
+            Matricula.turma_id == turma_disciplina.turma_id,
+            Matricula.ano_letivo == data_aula.year,
+            Matricula.situacao == "ativa",
+            Matricula.data_matricula <= data_aula,
+        )
+        .order_by(Aluno.nome_completo)
+    ).unique().all()
+
+    frequencias = db.scalars(
+        select(Frequencia).where(
+            Frequencia.horario_id == horario_id,
+            Frequencia.data_aula == data_aula,
+        )
+    ).all()
+
+    frequencias_por_aluno = {
+        frequencia.aluno_id: frequencia
+        for frequencia in frequencias
+    }
+
+    resultado = []
+
+    for aluno in alunos:
+        frequencia = frequencias_por_aluno.get(aluno.id)
+
+        resultado.append(
+            {
+                "aluno_id": aluno.id,
+                "nome_completo": aluno.nome_completo,
+                "frequencia_id": (
+                    frequencia.id if frequencia else None
+                ),
+                "situacao": (
+                    frequencia.situacao if frequencia else None
+                ),
+                "observacao": (
+                    frequencia.observacao if frequencia else None
+                ),
+            }
+        )
+
+    return resultado
+
+
 @router.get(
     "/{frequencia_id}",
     response_model=FrequenciaResponse,
@@ -455,7 +571,11 @@ def buscar_frequencia(
         require_permission("frequencia.listar")
     ),
 ):
-    frequencia = db.get(Frequencia, frequencia_id)
+    frequencia = db.scalar(
+        select(Frequencia)
+        .options(selectinload(Frequencia.aluno))
+        .where(Frequencia.id == frequencia_id)
+    )
 
     if frequencia is None:
         raise HTTPException(
@@ -486,6 +606,7 @@ def atualizar_frequencia(
 ):
     frequencia = db.scalar(
         select(Frequencia)
+        .options(selectinload(Frequencia.aluno))
         .where(Frequencia.id == frequencia_id)
         .with_for_update()
     )

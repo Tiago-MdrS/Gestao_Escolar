@@ -1,8 +1,7 @@
 from datetime import date, datetime
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
-
+from pydantic import AliasPath, BaseModel, ConfigDict, Field, field_validator
 
 SituacaoFrequencia = Literal[
     "presente",
@@ -31,16 +30,24 @@ class FrequenciaUpdate(BaseModel):
     situacao: SituacaoFrequencia | None = None
     observacao: str | None = Field(default=None, max_length=2000)
 
-
 class FrequenciaResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-
     id: int
     aluno_id: int
+    nome_completo: str = Field(
+        validation_alias=AliasPath("aluno", "nome_completo")
+    )
     horario_id: int
     data_aula: date
     situacao: SituacaoFrequencia
     observacao: str | None
     registrado_por_id: int
     data_registro: datetime
+
+class FrequenciaChamadaAlunoResponse(BaseModel):
+    aluno_id: int
+    nome_completo: str
+    frequencia_id: int | None = None
+    situacao: SituacaoFrequencia | None = None
+    observacao: str | None = None
