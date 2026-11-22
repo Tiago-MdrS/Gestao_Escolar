@@ -1,0 +1,408 @@
+--- GIT HEAD
++++ ATUAL
+@@ -61,16 +61,6 @@
+   observacao: string;
+ }
+ 
+-const diasSemana = [
+-  "Segunda-feira",
+-  "Terça-feira",
+-  "Quarta-feira",
+-  "Quinta-feira",
+-  "Sexta-feira",
+-  "Sábado",
+-  "Domingo",
+-];
+-
+ const PAGE_SIZE = 10;
+ 
+ function dataAtual() {
+@@ -83,7 +73,7 @@
+ }
+ 
+ function formatarData(data: string) {
+-  if (!data) return "—";
++  if (!data) return "â€”";
+ 
+   const [ano, mes, dia] = data.slice(0, 10).split("-");
+   return `${dia}/${mes}/${ano}`;
+@@ -114,23 +104,23 @@
+     if (typeof detail === "string") return detail;
+ 
+     if (Array.isArray(detail)) {
+-      return detail.map((item) => item.msg ?? "Erro de validação").join(" | ");
++      return detail.map((item) => item.msg ?? "Erro de validaÃ§Ã£o").join(" | ");
+     }
+ 
+     if (error.response?.status === 403) {
+-      return "Você não possui permissão para realizar esta operação.";
++      return "VocÃª nÃ£o possui permissÃ£o para realizar esta operaÃ§Ã£o.";
+     }
+ 
+     if (error.response?.status === 404) {
+-      return "O registro solicitado não foi encontrado.";
++      return "O registro solicitado nÃ£o foi encontrado.";
+     }
+ 
+     if (error.response?.status === 409) {
+-      return "Este registro já existe ou existe um conflito nos dados.";
++      return "Este registro jÃ¡ existe ou existe um conflito nos dados.";
+     }
+ 
+     if (!error.response) {
+-      return "Não foi possível conectar ao servidor.";
++      return "NÃ£o foi possÃ­vel conectar ao servidor.";
+     }
+   }
+ 
+@@ -185,7 +175,7 @@
+   const [carregandoChamada, setCarregandoChamada] = useState(false);
+   const [buscaAluno, setBuscaAluno] = useState("");
+ 
+-  // Filtros do histórico
++  // Filtros do histÃ³rico
+   const [buscaHistorico, setBuscaHistorico] = useState("");
+   const [filtroTurma, setFiltroTurma] = useState("todas");
+   const [filtroSituacao, setFiltroSituacao] = useState("todas");
+@@ -193,7 +183,7 @@
+   const [dataFim, setDataFim] = useState("");
+   const [pagina, setPagina] = useState(1);
+ 
+-  // Edição do histórico
++  // EdiÃ§Ã£o do histÃ³rico
+   const [edicoes, setEdicoes] = useState<Record<number, FrequenciaForm>>({});
+   const [salvandoEdicao, setSalvandoEdicao] = useState<number | null>(null);
+ 
+@@ -224,13 +214,13 @@
+     if (requisicoes[0].status === "fulfilled" && requisicoes[0].value) {
+       setHorarios(requisicoes[0].value.data);
+     } else if (podeConsultarHorarios) {
+-      setErro("Não foi possível carregar os horários.");
++      setErro("NÃ£o foi possÃ­vel carregar os horÃ¡rios.");
+     }
+ 
+     if (requisicoes[1].status === "fulfilled" && requisicoes[1].value) {
+       setFrequencias(requisicoes[1].value.data);
+     } else if (podeConsultar) {
+-      setErro("Não foi possível carregar o histórico de frequências.");
++      setErro("NÃ£o foi possÃ­vel carregar o histÃ³rico de frequÃªncias.");
+     }
+ 
+     setCarregando(false);
+@@ -362,12 +352,12 @@
+ 
+   const carregarChamada = async () => {
+     if (!horarioId || !dataAula) {
+-      setErro("Selecione a data e o horário da aula.");
++      setErro("Selecione a data e o horÃ¡rio da aula.");
+       return;
+     }
+ 
+     if (dataAula > dataAtual()) {
+-      setErro("Não é possível realizar chamada em uma data futura.");
++      setErro("NÃ£o Ã© possÃ­vel realizar chamada em uma data futura.");
+       return;
+     }
+ 
+@@ -395,7 +385,7 @@
+       );
+ 
+       if (resposta.data.length === 0) {
+-        setSucesso("Não há alunos com matrícula ativa para esta chamada.");
++        setSucesso("NÃ£o hÃ¡ alunos com matrÃ­cula ativa para esta chamada.");
+       }
+     } catch (error) {
+       setErro(getErrorMessage(error));
+@@ -436,7 +426,7 @@
+ 
+     if (pendentes.length > 0) {
+       setErro(
+-        `Ainda existem ${pendentes.length} aluno(s) sem situação definida.`,
++        `Ainda existem ${pendentes.length} aluno(s) sem situaÃ§Ã£o definida.`,
+       );
+       return;
+     }
+@@ -456,13 +446,13 @@
+ 
+     if (alterados.some((aluno) => aluno.frequencia_id) && !podeEditar) {
+       setErro(
+-        "Existem registros já lançados que foram alterados. Você não possui permissão para editá-los.",
++        "Existem registros jÃ¡ lanÃ§ados que foram alterados. VocÃª nÃ£o possui permissÃ£o para editÃ¡-los.",
+       );
+       return;
+     }
+ 
+     if (alterados.length === 0) {
+-      setSucesso("A chamada já está salva e não possui alterações.");
++      setSucesso("A chamada jÃ¡ estÃ¡ salva e nÃ£o possui alteraÃ§Ãµes.");
+       return;
+     }
+ 
+@@ -501,10 +491,10 @@
+ 
+     if (falhas > 0) {
+       setErro(
+-        `${salvos} registro(s) salvo(s) e ${falhas} não puderam ser salvos. Confira as permissões e os dados.`,
++        `${salvos} registro(s) salvo(s) e ${falhas} nÃ£o puderam ser salvos. Confira as permissÃµes e os dados.`,
+       );
+     } else {
+-      setSucesso(`${salvos} registro(s) de frequência salvo(s) com sucesso.`);
++      setSucesso(`${salvos} registro(s) de frequÃªncia salvo(s) com sucesso.`);
+     }
+ 
+     setSalvando(false);
+@@ -555,7 +545,7 @@
+       });
+ 
+       await carregarDados();
+-      setSucesso("Registro de frequência atualizado com sucesso.");
++      setSucesso("Registro de frequÃªncia atualizado com sucesso.");
+     } catch (error) {
+       setErro(getErrorMessage(error));
+     } finally {
+@@ -567,8 +557,8 @@
+     return (
+       <div className="frequency-access-denied">
+         <ClipboardCheck size={42} />
+-        <h2>Acesso não autorizado</h2>
+-        <p>Você não possui permissão para acessar as frequências.</p>
++        <h2>Acesso nÃ£o autorizado</h2>
++        <p>VocÃª nÃ£o possui permissÃ£o para acessar as frequÃªncias.</p>
+       </div>
+     );
+   }
+@@ -580,11 +570,11 @@
+     <div className="frequency-page">
+       <div className="frequency-heading">
+         <div>
+-          <span className="frequency-eyebrow">GESTÃO ACADÊMICA</span>
+-          <h2>Frequência escolar</h2>
++          <span className="frequency-eyebrow">GESTÃƒO ACADÃŠMICA</span>
++          <h2>FrequÃªncia escolar</h2>
+           <p>
+-            Registre a presença dos alunos e acompanhe o histórico de
+-            frequência das aulas.
++            Registre a presenÃ§a dos alunos e acompanhe o histÃ³rico de
++            frequÃªncia das aulas.
+           </p>
+         </div>
+ 
+@@ -629,7 +619,7 @@
+               <CheckCircle2 size={20} />
+             </div>
+             <div>
+-              <span>Presenças</span>
++              <span>PresenÃ§as</span>
+               <strong>{totalPresentes}</strong>
+             </div>
+           </div>
+@@ -679,7 +669,7 @@
+             }}
+           >
+             <CalendarDays size={17} />
+-            Histórico
++            HistÃ³rico
+           </button>
+         </div>
+       )}
+@@ -696,7 +686,7 @@
+ 
+           {!podeConsultarHorarios && (
+             <div className="frequency-empty">
+-              Você não possui permissão para consultar os horários das aulas.
++              VocÃª nÃ£o possui permissÃ£o para consultar os horÃ¡rios das aulas.
+             </div>
+           )}
+ 
+@@ -720,7 +710,7 @@
+                 </label>
+ 
+                 <label className="frequency-field">
+-                  Horário / disciplina
++                  HorÃ¡rio / disciplina
+                   <select
+                     value={horarioId}
+                     onChange={(event) => {
+@@ -730,11 +720,11 @@
+                       setSucesso("");
+                     }}
+                   >
+-                    <option value="">Selecione o horário</option>
++                    <option value="">Selecione o horÃ¡rio</option>
+                     {horariosDaData.map((horario) => (
+                       <option key={horario.id} value={horario.id}>
+-                        {horario.turma_nome} — {horario.disciplina_nome} (
+-                        {formatarHora(horario.hora_inicio)} às{" "}
++                        {horario.turma_nome} â€” {horario.disciplina_nome} (
++                        {formatarHora(horario.hora_inicio)} Ã s{" "}
+                         {formatarHora(horario.hora_fim)})
+                       </option>
+                     ))}
+@@ -766,15 +756,15 @@
+                     <strong>{horarioSelecionado.professor_nome}</strong>
+                   </div>
+                   <div>
+-                    <span>Horário</span>
++                    <span>HorÃ¡rio</span>
+                     <strong>
+-                      {formatarHora(horarioSelecionado.hora_inicio)} às{" "}
++                      {formatarHora(horarioSelecionado.hora_inicio)} Ã s{" "}
+                       {formatarHora(horarioSelecionado.hora_fim)}
+                     </strong>
+                   </div>
+                   <div>
+                     <span>Sala</span>
+-                    <strong>{horarioSelecionado.sala || "Não informada"}</strong>
++                    <strong>{horarioSelecionado.sala || "NÃ£o informada"}</strong>
+                   </div>
+                 </div>
+               )}
+@@ -785,9 +775,9 @@
+                     <div>
+                       <h4>Alunos da turma</h4>
+                       <span>
+-                        {alunos.length} aluno(s) ·{" "}
++                        {alunos.length} aluno(s) Â·{" "}
+                         {alunos.filter((aluno) => aluno.frequencia_id).length}{" "}
+-                        registro(s) já realizado(s)
++                        registro(s) jÃ¡ realizado(s)
+                       </span>
+                     </div>
+ 
+@@ -815,8 +805,8 @@
+                       <thead>
+                         <tr>
+                           <th>Aluno</th>
+-                          <th>Situação</th>
+-                          <th>Observação</th>
++                          <th>SituaÃ§Ã£o</th>
++                          <th>ObservaÃ§Ã£o</th>
+                           <th>Registro</th>
+                         </tr>
+                       </thead>
+@@ -858,7 +848,7 @@
+                                   )
+                                 }
+                                 maxLength={2000}
+-                                placeholder="Observação (opcional)"
++                                placeholder="ObservaÃ§Ã£o (opcional)"
+                               />
+                             </td>
+                             <td>
+@@ -882,7 +872,7 @@
+                   <div className="frequency-call-footer">
+                     <span>
+                       {alunos.filter((aluno) => aluno.situacao).length} de{" "}
+-                      {alunos.length} alunos com situação definida
++                      {alunos.length} alunos com situaÃ§Ã£o definida
+                     </span>
+ 
+                     <button
+@@ -902,13 +892,13 @@
+                 alunos.length === 0 &&
+                 sucesso === "" && (
+                   <div className="frequency-empty">
+-                    Clique em “Carregar alunos” para iniciar a chamada.
++                    Clique em â€œCarregar alunosâ€ para iniciar a chamada.
+                   </div>
+                 )}
+ 
+               {!carregandoChamada && horariosDaData.length === 0 && (
+                 <div className="frequency-empty">
+-                  Não há horários cadastrados para este dia da semana.
++                  NÃ£o hÃ¡ horÃ¡rios cadastrados para este dia da semana.
+                 </div>
+               )}
+             </>
+@@ -920,8 +910,8 @@
+         <section className="frequency-panel">
+           <div className="frequency-panel-header">
+             <div>
+-              <h3>Histórico de frequências</h3>
+-              <p>Consulte e filtre os registros de frequência.</p>
++              <h3>HistÃ³rico de frequÃªncias</h3>
++              <p>Consulte e filtre os registros de frequÃªncia.</p>
+             </div>
+             <CalendarDays size={23} />
+           </div>
+@@ -962,7 +952,7 @@
+             </label>
+ 
+             <label className="frequency-field">
+-              Situação
++              SituaÃ§Ã£o
+               <select
+                 value={filtroSituacao}
+                 onChange={(event) => setFiltroSituacao(event.target.value)}
+@@ -995,7 +985,7 @@
+ 
+           {dataInicio && dataFim && dataInicio > dataFim && (
+             <div className="frequency-filter-error">
+-              A data inicial não pode ser posterior à data final.
++              A data inicial nÃ£o pode ser posterior Ã  data final.
+             </div>
+           )}
+ 
+@@ -1006,9 +996,9 @@
+                   <th>Data</th>
+                   <th>Aluno</th>
+                   <th>Turma / disciplina</th>
+-                  <th>Situação</th>
+-                  <th>Observação</th>
+-                  {podeEditar && <th>Ação</th>}
++                  <th>SituaÃ§Ã£o</th>
++                  <th>ObservaÃ§Ã£o</th>
++                  {podeEditar && <th>AÃ§Ã£o</th>}
+                 </tr>
+               </thead>
+               <tbody>
+@@ -1021,7 +1011,7 @@
+                 ) : historicoPaginado.length === 0 ? (
+                   <tr>
+                     <td colSpan={podeEditar ? 6 : 5} className="frequency-table-empty">
+-                      Nenhum registro de frequência encontrado.
++                      Nenhum registro de frequÃªncia encontrado.
+                     </td>
+                   </tr>
+                 ) : (
+@@ -1040,11 +1030,11 @@
+                         </td>
+                         <td>
+                           <strong>
+-                            {horario?.turma_nome ?? "Turma não disponível"}
++                            {horario?.turma_nome ?? "Turma nÃ£o disponÃ­vel"}
+                           </strong>
+                           <small>
+                             {horario?.disciplina_nome ??
+-                              `Horário #${frequencia.horario_id}`}
++                              `HorÃ¡rio #${frequencia.horario_id}`}
+                           </small>
+                         </td>
+                         <td>
+@@ -1087,7 +1077,7 @@
+                               maxLength={2000}
+                             />
+                           ) : (
+-                            frequencia.observacao || "—"
++                            frequencia.observacao || "â€”"
+                           )}
+                         </td>
+                         {podeEditar && (
+@@ -1134,7 +1124,7 @@
+                 Anterior
+               </button>
+               <span>
+-                Página {pagina} de {totalPaginas}
++                PÃ¡gina {pagina} de {totalPaginas}
+               </span>
+               <button
+                 onClick={() =>
+@@ -1142,7 +1132,7 @@
+                 }
+                 disabled={pagina >= totalPaginas}
+               >
+-                Próxima
++                PrÃ³xima
+               </button>
+             </div>
+           </div>

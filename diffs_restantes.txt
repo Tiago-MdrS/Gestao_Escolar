@@ -1,0 +1,853 @@
+﻿
+========== backend/app/database.py ==========
+diff --git a/backend/app/database.py b/backend/app/database.py
+index 1ecd878..17ec92c 100644
+--- a/backend/app/database.py
++++ b/backend/app/database.py
+@@ -3,11 +3,11 @@ from sqlalchemy.orm import DeclarativeBase, sessionmaker
+ 
+ from app.core.config import settings
+ 
+ engine = create_engine(
+     settings.DATABASE_URL,
+-    echo=True,
++    echo=settings.SQL_ECHO,
+     pool_pre_ping=True
+ )
+ 
+ SessionLocal = sessionmaker(
+     bind=engine,
+
+========== backend/app/main.py ==========
+diff --git a/backend/app/main.py b/backend/app/main.py
+index 8b0720f..5b7f18a 100644
+--- a/backend/app/main.py
++++ b/backend/app/main.py
+@@ -1,6 +1,7 @@
+-´╗┐from fastapi import FastAPI, HTTPException
++´╗┐
++from fastapi import FastAPI, HTTPException, Request
+ from sqlalchemy import text
+ 
+ from app.core.config import settings
+ from app.database import engine
+ 
+@@ -32,10 +33,26 @@ app = FastAPI(
+     title=settings.APP_NAME,
+     description="API do Sistema de Gest├úo Escolar do Col├®gio Batista Bob Pierce.",
+     version="1.0.0"
+ )
+ 
++
++@app.middleware("http")
++async def remover_prefixo_api(request: Request, call_next):
++    path = request.scope["path"]
++
++    if path == "/api" or path.startswith("/api/"):
++        novo_path = path[4:] or "/"
++        request.scope["path"] = novo_path
++
++        raw_path = request.scope.get("raw_path")
++        if raw_path and raw_path.startswith(b"/api"):
++            request.scope["raw_path"] = raw_path[4:] or b"/"
++
++    return await call_next(request)
++
++
+ app.include_router(auth.router)
+ app.include_router(usuarios.router)
+ 
+ app.include_router(alunos.router)
+ app.include_router(turmas.router)
+
+========== backend/requirements.txt ==========
+diff --git a/backend/requirements.txt b/backend/requirements.txt
+index 81040cc..e5cc964 100644
+--- a/backend/requirements.txt
++++ b/backend/requirements.txt
+@@ -1,6 +1,6 @@
+-´╗┐alembic==1.20.1
++alembic==1.20.1
+ annotated-doc==0.0.5
+ annotated-types==0.8.0
+ anyio==4.16.0
+ argon2-cffi==25.1.0
+ argon2-cffi-bindings==26.1.0
+
+========== frontend/src/App.tsx ==========
+diff --git a/frontend/src/App.tsx b/frontend/src/App.tsx
+index 8695812..912fef9 100644
+--- a/frontend/src/App.tsx
++++ b/frontend/src/App.tsx
+@@ -12,10 +12,11 @@ import ProfessoresPage from "./pages/ProfessoresPage";
+ import DisciplinasPage from "./pages/DisciplinasPage";
+ import MatriculasPage from "./pages/MatriculasPage";
+ import HorariosPage from "./pages/HorariosPage";
+ import VinculosPage from "./pages/VinculosPage";
+ import FrequenciaPage from "./pages/FrequenciaPage";
++import UsuariosPage from "./pages/UsuariosPage";
+ 
+ import TurmasPage from "./pages/TurmasPage";
+ 
+ export default function App() {
+   const { user, loading } = useAuth();
+@@ -41,10 +42,11 @@ export default function App() {
+           <Route path="matriculas" element={<MatriculasPage />} />
+           <Route path="disciplinas" element={<DisciplinasPage />} />
+           <Route path="horarios" element={<HorariosPage />} />
+           <Route path="vinculos" element={<VinculosPage />} />
+           <Route path="frequencias" element={<FrequenciaPage />} />
++          <Route path="usuarios" element={<UsuariosPage />} />
+ 
+           <Route path="*" element={<PlaceholderPage />} />
+         </Route>
+       </Route>
+ 
+
+========== frontend/src/pages/FrequenciaPage.tsx ==========
+diff --git a/frontend/src/pages/FrequenciaPage.tsx b/frontend/src/pages/FrequenciaPage.tsx
+index 0fcc940..8cef241 100644
+--- a/frontend/src/pages/FrequenciaPage.tsx
++++ b/frontend/src/pages/FrequenciaPage.tsx
+@@ -59,20 +59,10 @@ interface AlunoChamadaForm extends Omit<AlunoChamada, "situacao"> {
+ interface FrequenciaForm {
+   situacao: SituacaoFrequencia;
+   observacao: string;
+ }
+ 
+-const diasSemana = [
+-  "Segunda-feira",
+-  "Ter├ºa-feira",
+-  "Quarta-feira",
+-  "Quinta-feira",
+-  "Sexta-feira",
+-  "S├íbado",
+-  "Domingo",
+-];
+-
+ const PAGE_SIZE = 10;
+ 
+ function dataAtual() {
+   const hoje = new Date();
+   const ano = hoje.getFullYear();
+@@ -81,11 +71,11 @@ function dataAtual() {
+ 
+   return `${ano}-${mes}-${dia}`;
+ }
+ 
+ function formatarData(data: string) {
+-  if (!data) return "ÔÇö";
++  if (!data) return "├óÔé¼ÔÇØ";
+ 
+   const [ano, mes, dia] = data.slice(0, 10).split("-");
+   return `${dia}/${mes}/${ano}`;
+ }
+ 
+@@ -112,27 +102,27 @@ function getErrorMessage(error: unknown): string {
+     const detail = error.response?.data?.detail;
+ 
+     if (typeof detail === "string") return detail;
+ 
+     if (Array.isArray(detail)) {
+-      return detail.map((item) => item.msg ?? "Erro de valida├º├úo").join(" | ");
++      return detail.map((item) => item.msg ?? "Erro de valida├â┬º├â┬úo").join(" | ");
+     }
+ 
+     if (error.response?.status === 403) {
+-      return "Voc├¬ n├úo possui permiss├úo para realizar esta opera├º├úo.";
++      return "Voc├â┬¬ n├â┬úo possui permiss├â┬úo para realizar esta opera├â┬º├â┬úo.";
+     }
+ 
+     if (error.response?.status === 404) {
+-      return "O registro solicitado n├úo foi encontrado.";
++      return "O registro solicitado n├â┬úo foi encontrado.";
+     }
+ 
+     if (error.response?.status === 409) {
+-      return "Este registro j├í existe ou existe um conflito nos dados.";
++      return "Este registro j├â┬í existe ou existe um conflito nos dados.";
+     }
+ 
+     if (!error.response) {
+-      return "N├úo foi poss├¡vel conectar ao servidor.";
++      return "N├â┬úo foi poss├â┬¡vel conectar ao servidor.";
+     }
+   }
+ 
+   return "Ocorreu um erro inesperado. Tente novamente.";
+ }
+@@ -183,19 +173,19 @@ export default function FrequenciaPage() {
+   const [horarioId, setHorarioId] = useState("");
+   const [alunos, setAlunos] = useState<AlunoChamadaForm[]>([]);
+   const [carregandoChamada, setCarregandoChamada] = useState(false);
+   const [buscaAluno, setBuscaAluno] = useState("");
+ 
+-  // Filtros do hist├│rico
++  // Filtros do hist├â┬│rico
+   const [buscaHistorico, setBuscaHistorico] = useState("");
+   const [filtroTurma, setFiltroTurma] = useState("todas");
+   const [filtroSituacao, setFiltroSituacao] = useState("todas");
+   const [dataInicio, setDataInicio] = useState("");
+   const [dataFim, setDataFim] = useState("");
+   const [pagina, setPagina] = useState(1);
+ 
+-  // Edi├º├úo do hist├│rico
++  // Edi├â┬º├â┬úo do hist├â┬│rico
+   const [edicoes, setEdicoes] = useState<Record<number, FrequenciaForm>>({});
+   const [salvandoEdicao, setSalvandoEdicao] = useState<number | null>(null);
+ 
+   const carregarDados = useCallback(async () => {
+     setCarregando(true);
+@@ -222,17 +212,17 @@ export default function FrequenciaPage() {
+     ]);
+ 
+     if (requisicoes[0].status === "fulfilled" && requisicoes[0].value) {
+       setHorarios(requisicoes[0].value.data);
+     } else if (podeConsultarHorarios) {
+-      setErro("N├úo foi poss├¡vel carregar os hor├írios.");
++      setErro("N├â┬úo foi poss├â┬¡vel carregar os hor├â┬írios.");
+     }
+ 
+     if (requisicoes[1].status === "fulfilled" && requisicoes[1].value) {
+       setFrequencias(requisicoes[1].value.data);
+     } else if (podeConsultar) {
+-      setErro("N├úo foi poss├¡vel carregar o hist├│rico de frequ├¬ncias.");
++      setErro("N├â┬úo foi poss├â┬¡vel carregar o hist├â┬│rico de frequ├â┬¬ncias.");
+     }
+ 
+     setCarregando(false);
+   }, [
+     podeConsultarHorarios,
+@@ -360,16 +350,16 @@ export default function FrequenciaPage() {
+     }
+   }, [horariosDaData, horarioId]);
+ 
+   const carregarChamada = async () => {
+     if (!horarioId || !dataAula) {
+-      setErro("Selecione a data e o hor├írio da aula.");
++      setErro("Selecione a data e o hor├â┬írio da aula.");
+       return;
+     }
+ 
+     if (dataAula > dataAtual()) {
+-      setErro("N├úo ├® poss├¡vel realizar chamada em uma data futura.");
++      setErro("N├â┬úo ├â┬® poss├â┬¡vel realizar chamada em uma data futura.");
+       return;
+     }
+ 
+     setCarregandoChamada(true);
+     setErro("");
+@@ -393,11 +383,11 @@ export default function FrequenciaPage() {
+           situacao: aluno.situacao ?? "",
+         })),
+       );
+ 
+       if (resposta.data.length === 0) {
+-        setSucesso("N├úo h├í alunos com matr├¡cula ativa para esta chamada.");
++        setSucesso("N├â┬úo h├â┬í alunos com matr├â┬¡cula ativa para esta chamada.");
+       }
+     } catch (error) {
+       setErro(getErrorMessage(error));
+     } finally {
+       setCarregandoChamada(false);
+@@ -434,11 +424,11 @@ export default function FrequenciaPage() {
+ 
+     const pendentes = alunos.filter((aluno) => !aluno.situacao);
+ 
+     if (pendentes.length > 0) {
+       setErro(
+-        `Ainda existem ${pendentes.length} aluno(s) sem situa├º├úo definida.`,
++        `Ainda existem ${pendentes.length} aluno(s) sem situa├â┬º├â┬úo definida.`,
+       );
+       return;
+     }
+ 
+     const alterados = alunos.filter((aluno) => {
+@@ -454,17 +444,17 @@ export default function FrequenciaPage() {
+       );
+     });
+ 
+     if (alterados.some((aluno) => aluno.frequencia_id) && !podeEditar) {
+       setErro(
+-        "Existem registros j├í lan├ºados que foram alterados. Voc├¬ n├úo possui permiss├úo para edit├í-los.",
++        "Existem registros j├â┬í lan├â┬ºados que foram alterados. Voc├â┬¬ n├â┬úo possui permiss├â┬úo para edit├â┬í-los.",
+       );
+       return;
+     }
+ 
+     if (alterados.length === 0) {
+-      setSucesso("A chamada j├í est├í salva e n├úo possui altera├º├Áes.");
++      setSucesso("A chamada j├â┬í est├â┬í salva e n├â┬úo possui altera├â┬º├â┬Áes.");
+       return;
+     }
+ 
+     setSalvando(true);
+     setErro("");
+@@ -499,14 +489,14 @@ export default function FrequenciaPage() {
+     await carregarDados();
+     await carregarChamada();
+ 
+     if (falhas > 0) {
+       setErro(
+-        `${salvos} registro(s) salvo(s) e ${falhas} n├úo puderam ser salvos. Confira as permiss├Áes e os dados.`,
++        `${salvos} registro(s) salvo(s) e ${falhas} n├â┬úo puderam ser salvos. Confira as permiss├â┬Áes e os dados.`,
+       );
+     } else {
+-      setSucesso(`${salvos} registro(s) de frequ├¬ncia salvo(s) com sucesso.`);
++      setSucesso(`${salvos} registro(s) de frequ├â┬¬ncia salvo(s) com sucesso.`);
+     }
+ 
+     setSalvando(false);
+   };
+ 
+@@ -553,11 +543,11 @@ export default function FrequenciaPage() {
+         delete novas[frequenciaId];
+         return novas;
+       });
+ 
+       await carregarDados();
+-      setSucesso("Registro de frequ├¬ncia atualizado com sucesso.");
++      setSucesso("Registro de frequ├â┬¬ncia atualizado com sucesso.");
+     } catch (error) {
+       setErro(getErrorMessage(error));
+     } finally {
+       setSalvandoEdicao(null);
+     }
+@@ -565,12 +555,12 @@ export default function FrequenciaPage() {
+ 
+   if (!podeRegistrar && !podeConsultar) {
+     return (
+       <div className="frequency-access-denied">
+         <ClipboardCheck size={42} />
+-        <h2>Acesso n├úo autorizado</h2>
+-        <p>Voc├¬ n├úo possui permiss├úo para acessar as frequ├¬ncias.</p>
++        <h2>Acesso n├â┬úo autorizado</h2>
++        <p>Voc├â┬¬ n├â┬úo possui permiss├â┬úo para acessar as frequ├â┬¬ncias.</p>
+       </div>
+     );
+   }
+ 
+   const mostrarChamada = podeRegistrar;
+@@ -578,15 +568,15 @@ export default function FrequenciaPage() {
+ 
+   return (
+     <div className="frequency-page">
+       <div className="frequency-heading">
+         <div>
+-          <span className="frequency-eyebrow">GEST├âO ACAD├èMICA</span>
+-          <h2>Frequ├¬ncia escolar</h2>
++          <span className="frequency-eyebrow">GEST├âãÆO ACAD├â┼áMICA</span>
++          <h2>Frequ├â┬¬ncia escolar</h2>
+           <p>
+-            Registre a presen├ºa dos alunos e acompanhe o hist├│rico de
+-            frequ├¬ncia das aulas.
++            Registre a presen├â┬ºa dos alunos e acompanhe o hist├â┬│rico de
++            frequ├â┬¬ncia das aulas.
+           </p>
+         </div>
+ 
+         <button
+           className="frequency-refresh-button"
+@@ -627,11 +617,11 @@ export default function FrequenciaPage() {
+           <div className="frequency-stat">
+             <div className="frequency-stat-icon frequency-icon-present">
+               <CheckCircle2 size={20} />
+             </div>
+             <div>
+-              <span>Presen├ºas</span>
++              <span>Presen├â┬ºas</span>
+               <strong>{totalPresentes}</strong>
+             </div>
+           </div>
+ 
+           <div className="frequency-stat">
+@@ -677,11 +667,11 @@ export default function FrequenciaPage() {
+               setErro("");
+               setSucesso("");
+             }}
+           >
+             <CalendarDays size={17} />
+-            Hist├│rico
++            Hist├â┬│rico
+           </button>
+         </div>
+       )}
+ 
+       {mostrarChamada && (!mostrarHistorico || abaAtiva === "chamada") && (
+@@ -694,11 +684,11 @@ export default function FrequenciaPage() {
+             <ClipboardCheck size={23} />
+           </div>
+ 
+           {!podeConsultarHorarios && (
+             <div className="frequency-empty">
+-              Voc├¬ n├úo possui permiss├úo para consultar os hor├írios das aulas.
++              Voc├â┬¬ n├â┬úo possui permiss├â┬úo para consultar os hor├â┬írios das aulas.
+             </div>
+           )}
+ 
+           {podeConsultarHorarios && (
+             <>
+@@ -718,25 +708,25 @@ export default function FrequenciaPage() {
+                     }}
+                   />
+                 </label>
+ 
+                 <label className="frequency-field">
+-                  Hor├írio / disciplina
++                  Hor├â┬írio / disciplina
+                   <select
+                     value={horarioId}
+                     onChange={(event) => {
+                       setHorarioId(event.target.value);
+                       setAlunos([]);
+                       setErro("");
+                       setSucesso("");
+                     }}
+                   >
+-                    <option value="">Selecione o hor├írio</option>
++                    <option value="">Selecione o hor├â┬írio</option>
+                     {horariosDaData.map((horario) => (
+                       <option key={horario.id} value={horario.id}>
+-                        {horario.turma_nome} ÔÇö {horario.disciplina_nome} (
+-                        {formatarHora(horario.hora_inicio)} ├ás{" "}
++                        {horario.turma_nome} ├óÔé¼ÔÇØ {horario.disciplina_nome} (
++                        {formatarHora(horario.hora_inicio)} ├â┬ás{" "}
+                         {formatarHora(horario.hora_fim)})
+                       </option>
+                     ))}
+                   </select>
+                 </label>
+@@ -764,32 +754,32 @@ export default function FrequenciaPage() {
+                   <div>
+                     <span>Professor</span>
+                     <strong>{horarioSelecionado.professor_nome}</strong>
+                   </div>
+                   <div>
+-                    <span>Hor├írio</span>
++                    <span>Hor├â┬írio</span>
+                     <strong>
+-                      {formatarHora(horarioSelecionado.hora_inicio)} ├ás{" "}
++                      {formatarHora(horarioSelecionado.hora_inicio)} ├â┬ás{" "}
+                       {formatarHora(horarioSelecionado.hora_fim)}
+                     </strong>
+                   </div>
+                   <div>
+                     <span>Sala</span>
+-                    <strong>{horarioSelecionado.sala || "N├úo informada"}</strong>
++                    <strong>{horarioSelecionado.sala || "N├â┬úo informada"}</strong>
+                   </div>
+                 </div>
+               )}
+ 
+               {alunos.length > 0 && (
+                 <>
+                   <div className="frequency-list-toolbar">
+                     <div>
+                       <h4>Alunos da turma</h4>
+                       <span>
+-                        {alunos.length} aluno(s) ┬À{" "}
++                        {alunos.length} aluno(s) ├é┬À{" "}
+                         {alunos.filter((aluno) => aluno.frequencia_id).length}{" "}
+-                        registro(s) j├í realizado(s)
++                        registro(s) j├â┬í realizado(s)
+                       </span>
+                     </div>
+ 
+                     <div className="frequency-bulk-actions">
+                       <button onClick={() => marcarTodos("presente")}>
+@@ -813,12 +803,12 @@ export default function FrequenciaPage() {
+                   <div className="frequency-table-wrapper">
+                     <table className="frequency-table">
+                       <thead>
+                         <tr>
+                           <th>Aluno</th>
+-                          <th>Situa├º├úo</th>
+-                          <th>Observa├º├úo</th>
++                          <th>Situa├â┬º├â┬úo</th>
++                          <th>Observa├â┬º├â┬úo</th>
+                           <th>Registro</th>
+                         </tr>
+                       </thead>
+                       <tbody>
+                         {alunosFiltrados.map((aluno) => (
+@@ -856,11 +846,11 @@ export default function FrequenciaPage() {
+                                     aluno.aluno_id,
+                                     event.target.value,
+                                   )
+                                 }
+                                 maxLength={2000}
+-                                placeholder="Observa├º├úo (opcional)"
++                                placeholder="Observa├â┬º├â┬úo (opcional)"
+                               />
+                             </td>
+                             <td>
+                               {aluno.frequencia_id ? (
+                                 <span className="frequency-recorded">
+@@ -880,11 +870,11 @@ export default function FrequenciaPage() {
+                   </div>
+ 
+                   <div className="frequency-call-footer">
+                     <span>
+                       {alunos.filter((aluno) => aluno.situacao).length} de{" "}
+-                      {alunos.length} alunos com situa├º├úo definida
++                      {alunos.length} alunos com situa├â┬º├â┬úo definida
+                     </span>
+ 
+                     <button
+                       className="frequency-primary-button"
+                       onClick={() => void salvarChamada()}
+@@ -900,17 +890,17 @@ export default function FrequenciaPage() {
+               {!carregandoChamada &&
+                 horarioId &&
+                 alunos.length === 0 &&
+                 sucesso === "" && (
+                   <div className="frequency-empty">
+-                    Clique em ÔÇ£Carregar alunosÔÇØ para iniciar a chamada.
++                    Clique em ├óÔé¼┼ôCarregar alunos├óÔé¼┬Ø para iniciar a chamada.
+                   </div>
+                 )}
+ 
+               {!carregandoChamada && horariosDaData.length === 0 && (
+                 <div className="frequency-empty">
+-                  N├úo h├í hor├írios cadastrados para este dia da semana.
++                  N├â┬úo h├â┬í hor├â┬írios cadastrados para este dia da semana.
+                 </div>
+               )}
+             </>
+           )}
+         </section>
+@@ -918,12 +908,12 @@ export default function FrequenciaPage() {
+ 
+       {mostrarHistorico && (!mostrarChamada || abaAtiva === "historico") && (
+         <section className="frequency-panel">
+           <div className="frequency-panel-header">
+             <div>
+-              <h3>Hist├│rico de frequ├¬ncias</h3>
+-              <p>Consulte e filtre os registros de frequ├¬ncia.</p>
++              <h3>Hist├â┬│rico de frequ├â┬¬ncias</h3>
++              <p>Consulte e filtre os registros de frequ├â┬¬ncia.</p>
+             </div>
+             <CalendarDays size={23} />
+           </div>
+ 
+           <div className="frequency-history-filters">
+@@ -960,11 +950,11 @@ export default function FrequenciaPage() {
+                 ))}
+               </select>
+             </label>
+ 
+             <label className="frequency-field">
+-              Situa├º├úo
++              Situa├â┬º├â┬úo
+               <select
+                 value={filtroSituacao}
+                 onChange={(event) => setFiltroSituacao(event.target.value)}
+               >
+                 <option value="todas">Todas</option>
+@@ -993,24 +983,24 @@ export default function FrequenciaPage() {
+             </label>
+           </div>
+ 
+           {dataInicio && dataFim && dataInicio > dataFim && (
+             <div className="frequency-filter-error">
+-              A data inicial n├úo pode ser posterior ├á data final.
++              A data inicial n├â┬úo pode ser posterior ├â┬á data final.
+             </div>
+           )}
+ 
+           <div className="frequency-table-wrapper">
+             <table className="frequency-table">
+               <thead>
+                 <tr>
+                   <th>Data</th>
+                   <th>Aluno</th>
+                   <th>Turma / disciplina</th>
+-                  <th>Situa├º├úo</th>
+-                  <th>Observa├º├úo</th>
+-                  {podeEditar && <th>A├º├úo</th>}
++                  <th>Situa├â┬º├â┬úo</th>
++                  <th>Observa├â┬º├â┬úo</th>
++                  {podeEditar && <th>A├â┬º├â┬úo</th>}
+                 </tr>
+               </thead>
+               <tbody>
+                 {carregando ? (
+                   <tr>
+@@ -1019,11 +1009,11 @@ export default function FrequenciaPage() {
+                     </td>
+                   </tr>
+                 ) : historicoPaginado.length === 0 ? (
+                   <tr>
+                     <td colSpan={podeEditar ? 6 : 5} className="frequency-table-empty">
+-                      Nenhum registro de frequ├¬ncia encontrado.
++                      Nenhum registro de frequ├â┬¬ncia encontrado.
+                     </td>
+                   </tr>
+                 ) : (
+                   historicoPaginado.map((frequencia) => {
+                     const horario = horarios.find(
+@@ -1038,15 +1028,15 @@ export default function FrequenciaPage() {
+                         <td>
+                           <strong>{frequencia.nome_completo}</strong>
+                         </td>
+                         <td>
+                           <strong>
+-                            {horario?.turma_nome ?? "Turma n├úo dispon├¡vel"}
++                            {horario?.turma_nome ?? "Turma n├â┬úo dispon├â┬¡vel"}
+                           </strong>
+                           <small>
+                             {horario?.disciplina_nome ??
+-                              `Hor├írio #${frequencia.horario_id}`}
++                              `Hor├â┬írio #${frequencia.horario_id}`}
+                           </small>
+                         </td>
+                         <td>
+                           {edicao ? (
+                             <select
+@@ -1085,11 +1075,11 @@ export default function FrequenciaPage() {
+                                 )
+                               }
+                               maxLength={2000}
+                             />
+                           ) : (
+-                            frequencia.observacao || "ÔÇö"
++                            frequencia.observacao || "├óÔé¼ÔÇØ"
+                           )}
+                         </td>
+                         {podeEditar && (
+                           <td>
+                             {edicao ? (
+@@ -1132,19 +1122,19 @@ export default function FrequenciaPage() {
+                 disabled={pagina <= 1}
+               >
+                 Anterior
+               </button>
+               <span>
+-                P├ígina {pagina} de {totalPaginas}
++                P├â┬ígina {pagina} de {totalPaginas}
+               </span>
+               <button
+                 onClick={() =>
+                   setPagina((atual) => Math.min(totalPaginas, atual + 1))
+                 }
+                 disabled={pagina >= totalPaginas}
+               >
+-                Pr├│xima
++                Pr├â┬│xima
+               </button>
+             </div>
+           </div>
+         </section>
+       )}
+
+========== frontend/src/styles/global.css ==========
+diff --git a/frontend/src/styles/global.css b/frontend/src/styles/global.css
+index 7681814..6e0de59 100644
+--- a/frontend/src/styles/global.css
++++ b/frontend/src/styles/global.css
+@@ -3889,5 +3889,205 @@ textarea {
+ @media (max-width: 420px) {
+   .frequency-class-info {
+     grid-template-columns: 1fr;
+   }
+ }
++
++/* ==========================================================
++   USU├üRIOS E PERFIS
++   ========================================================== */
++
++.users-tabs {
++  display: flex;
++  align-items: center;
++  gap: 8px;
++  flex-wrap: wrap;
++}
++
++.users-tab {
++  display: inline-flex;
++  align-items: center;
++  gap: 8px;
++  padding: 10px 16px;
++  border: 1px solid var(--border);
++  border-radius: 8px;
++  background: var(--surface);
++  color: var(--muted);
++  font: inherit;
++  font-weight: 600;
++  cursor: pointer;
++}
++
++.users-tab.active {
++  border-color: var(--accent);
++  background: var(--accent);
++  color: white;
++}
++
++.users-profiles-grid {
++  display: grid;
++  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
++  gap: 18px;
++}
++
++.users-profile-card {
++  display: flex;
++  flex-direction: column;
++  gap: 14px;
++  padding: 20px;
++}
++
++.users-profile-header {
++  display: flex;
++  align-items: center;
++  justify-content: space-between;
++}
++
++.users-profile-icon {
++  display: grid;
++  place-items: center;
++  width: 44px;
++  height: 44px;
++  border-radius: 10px;
++  background: #fff1e8;
++  color: var(--accent);
++}
++
++.users-profile-card h3 {
++  margin: 0;
++  font-size: 17px;
++}
++
++.users-profile-card p {
++  margin: 0;
++  line-height: 1.5;
++}
++
++.users-profile-info {
++  display: flex;
++  align-items: center;
++  gap: 8px;
++  color: var(--muted);
++  font-size: 13px;
++}
++
++.users-profile-info span {
++  display: inline-flex;
++  align-items: center;
++  gap: 6px;
++}
++
++.users-profile-card .secondary-button {
++  justify-content: center;
++  margin-top: auto;
++}
++
++.users-profile-modal {
++  width: min(760px, 100%);
++  max-height: 90vh;
++  overflow-y: auto;
++}
++
++.users-permissions-section {
++  margin-top: 26px;
++}
++
++.users-permissions-heading {
++  display: flex;
++  align-items: flex-start;
++  justify-content: space-between;
++  gap: 16px;
++  margin-bottom: 18px;
++}
++
++.users-permissions-heading h3 {
++  margin: 0 0 5px;
++  font-size: 17px;
++}
++
++.users-permissions-heading p {
++  margin: 0;
++}
++
++.users-permissions-count {
++  flex-shrink: 0;
++  padding: 6px 10px;
++  border-radius: 20px;
++  background: #fff1e8;
++  color: var(--accent);
++  font-size: 12px;
++  font-weight: 700;
++}
++
++.users-permission-group {
++  margin-bottom: 18px;
++  padding: 16px;
++  border: 1px solid var(--border);
++  border-radius: 10px;
++}
++
++.users-permission-group h4 {
++  margin: 0 0 12px;
++  color: var(--text);
++  font-size: 14px;
++  text-transform: capitalize;
++}
++
++.users-permission-list {
++  display: grid;
++  grid-template-columns: repeat(2, minmax(0, 1fr));
++  gap: 10px;
++}
++
++.users-permission-item {
++  display: flex;
++  align-items: flex-start;
++  gap: 10px;
++  padding: 10px;
++  border-radius: 8px;
++  background: var(--bg);
++  cursor: pointer;
++}
++
++.users-permission-item input {
++  width: 16px;
++  height: 16px;
++  margin-top: 2px;
++  accent-color: var(--accent);
++  cursor: pointer;
++}
++
++.users-permission-item span {
++  display: flex;
++  flex-direction: column;
++  gap: 4px;
++}
++
++.users-permission-item strong {
++  color: var(--text);
++  font-size: 13px;
++}
++
++.users-permission-item small {
++  color: var(--muted);
++  font-size: 11px;
++  line-height: 1.4;
++}
++
++@media (max-width: 640px) {
++  .users-permission-list {
++    grid-template-columns: 1fr;
++  }
++
++  .users-permissions-heading {
++    flex-direction: column;
++  }
++
++  .users-tabs {
++    width: 100%;
++  }
++
++  .users-tab {
++    flex: 1;
++    justify-content: center;
++  }
++}
