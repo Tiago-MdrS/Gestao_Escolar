@@ -1,4 +1,5 @@
-﻿import axios from "axios";
+﻿
+import axios from "axios";
 
 export const TOKEN_KEY = "cbbp_access_token";
 
@@ -16,12 +17,16 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const requisicaoLogin = error.config?.url?.includes("/auth/login");
+
+    if (error.response?.status === 401 && !requisicaoLogin) {
       localStorage.removeItem(TOKEN_KEY);
+
       if (window.location.pathname !== "/login") {
         window.location.assign("/login");
       }
     }
+
     return Promise.reject(error);
   },
 );

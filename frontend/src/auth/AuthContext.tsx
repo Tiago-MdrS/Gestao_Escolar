@@ -1,3 +1,4 @@
+
 import {
   createContext,
   useCallback,
@@ -55,8 +56,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     localStorage.setItem(TOKEN_KEY, tokenResponse.data.access_token);
-    const me = await api.get<UsuarioAutenticado>("/auth/me");
-    setUser(me.data);
+
+    try {
+      const me = await api.get<UsuarioAutenticado>("/auth/me");
+      setUser(me.data);
+    } catch (error) {
+      localStorage.removeItem(TOKEN_KEY);
+      setUser(null);
+      throw error;
+    }
   }, []);
 
   const signOut = useCallback(() => {

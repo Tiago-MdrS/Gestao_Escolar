@@ -1,4 +1,4 @@
-
+﻿
 import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import {
@@ -60,16 +60,6 @@ interface FrequenciaForm {
   situacao: SituacaoFrequencia;
   observacao: string;
 }
-
-const diasSemana = [
-  "Segunda-feira",
-  "Terça-feira",
-  "Quarta-feira",
-  "Quinta-feira",
-  "Sexta-feira",
-  "Sábado",
-  "Domingo",
-];
 
 const PAGE_SIZE = 10;
 

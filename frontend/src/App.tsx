@@ -14,6 +14,7 @@ import MatriculasPage from "./pages/MatriculasPage";
 import HorariosPage from "./pages/HorariosPage";
 import VinculosPage from "./pages/VinculosPage";
 import FrequenciaPage from "./pages/FrequenciaPage";
+import UsuariosPage from "./pages/UsuariosPage";
 
 import TurmasPage from "./pages/TurmasPage";
 
@@ -43,6 +44,7 @@ export default function App() {
           <Route path="horarios" element={<HorariosPage />} />
           <Route path="vinculos" element={<VinculosPage />} />
           <Route path="frequencias" element={<FrequenciaPage />} />
+          <Route path="usuarios" element={<UsuariosPage />} />
 
           <Route path="*" element={<PlaceholderPage />} />
         </Route>

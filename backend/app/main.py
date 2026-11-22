@@ -1,4 +1,5 @@
-﻿from fastapi import FastAPI, HTTPException
+﻿
+from fastapi import FastAPI, HTTPException, Request
 from sqlalchemy import text
 
 from app.core.config import settings
@@ -33,6 +34,22 @@ app = FastAPI(
     description="API do Sistema de Gestão Escolar do Colégio Batista Bob Pierce.",
     version="1.0.0"
 )
+
+
+@app.middleware("http")
+async def remover_prefixo_api(request: Request, call_next):
+    path = request.scope["path"]
+
+    if path == "/api" or path.startswith("/api/"):
+        novo_path = path[4:] or "/"
+        request.scope["path"] = novo_path
+
+        raw_path = request.scope.get("raw_path")
+        if raw_path and raw_path.startswith(b"/api"):
+            request.scope["raw_path"] = raw_path[4:] or b"/"
+
+    return await call_next(request)
+
 
 app.include_router(auth.router)
 app.include_router(usuarios.router)

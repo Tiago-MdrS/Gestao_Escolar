@@ -1,4 +1,5 @@
-﻿from datetime import datetime, timezone
+﻿
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
@@ -50,7 +51,11 @@ def login(
             headers={"WWW-Authenticate": "Bearer"}
         )
 
-    if not usuario.ativo or not usuario.perfil.ativo:
+    if (
+        not usuario.ativo
+        or usuario.perfil is None
+        or not usuario.perfil.ativo
+    ):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Esta conta está inativa."
